@@ -1,5 +1,5 @@
 
-## r-ci: Continuous Integration for R at Travis, GitHub Actions, Azure Pipelines, ...
+## r-ci: Continuous Integration for R at Travis, GitHub, Azure, ...
 
 This is the successor / continuation of the [r-travis](https://github.com/eddelbuettel/r-travis)
 repository, which is itself a maintained fork of the (now deprecated) original
@@ -47,9 +47,9 @@ Actions](https://github.com/eddelbuettel/tidycpp/blob/master/.github/workflows/R
 
 Numerous variations are possible: running 'test matrices' across macOS and Linux, using BSPM for
 binaries (both of those [are used by
-digest](https://github.com/eddelbuettel/digest/blob/master/.travis.yml), running with several g++
+digest](https://github.com/eddelbuettel/digest/blob/master/.travis.yml), running with several `g++`
 versions (as used by
-[RcppSimdjson](https://github.com/eddelbuettel/rcppsimdjson/blob/master/.travis.yml), ...
+[RcppSimdjson](https://github.com/eddelbuettel/rcppsimdjson/blob/master/.travis.yml), ...).
 
 We also use the same approach of downloading `run.sh` and invoking it for the different steps in
 with GitHub Actions (_e.g._ for
