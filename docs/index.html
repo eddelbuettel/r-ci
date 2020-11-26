@@ -16,8 +16,26 @@
 <!-- One -->
 <section class="banner style1 orient-left content-align-left image-position-right fullscreen onload-image-fade-in onload-content-fade-right">
 <div class="content">
+  <header>
   <h2><code>r-ci</code></h2>
-  <p class="major"> This repository provides the <code>run.sh</code> script for portable, flexible and lightweight use of Continuous Integration at Travis, GitHub Actions, Azure Pipelines and possibly others.</p>
+  <p>Easy and portable CI for R packages</p>
+  </header>
+  <p class="major">
+  This repository provides the script <code>run.sh</code> for portable, flexible and lightweight use of Continuous Integration at Travis, GitHub Actions, Azure Pipelines and possibly others.
+  </p>
+  <p class="major">
+  This script contains the following key functions which are typically all a user needs to call:
+  </p>
+  <dl>
+    <dt><code>./run.sh bootstrap</code></dt>
+    <dd><p>Sets up the R test environment, checks out the package sources, and installs auxiliary packages such as <code>testthat</code> or <code>tinytest</code>.</p></dd>
+
+    <dt><code>./run.sh install_all</code></dt>
+    <dd><p>Parses the <code>DESCRIPTION</code> file and installs the required (and suggested) packages. <code>install_deps</code> is a lighterweight alternative.</p></dd>
+
+    <dt><code>./run.sh run_tests</code></dt>
+    <dd><p>Builds the package tarball and tests it.</p></dd>
+  </dl>
   <ul class="actions stacked">
     <li><a href="#first" class="button big wide smooth-scroll-middle">Get Started</a></li>
   </ul>
