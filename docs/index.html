@@ -37,7 +37,7 @@
     <dd><p>Builds the package tarball and tests it.</p></dd>
   </dl>
   <ul class="actions stacked">
-    <li><a href="#first" class="button big wide smooth-scroll-middle">Get Started</a></li>
+    <li><a href="#first" class="button big wide smooth-scroll-middle">See below for Travis and GH Actions</a></li>
   </ul>
 </div>
 <div class="image">
@@ -105,19 +105,64 @@ notifications:
 </div>
 </section>
 
-<!-- <\!-- Three -\-> -->
-<!-- <section class="spotlight style1 orient-left content-align-left image-position-center onscroll-image-fade-in"> -->
-<!-- <div class="content"> -->
-<!--   <h2>Tempus adipiscing</h2> -->
-<!--   <p>Lorem ipsum dolor sit amet, consectetur adipiscing elit. Morbi id ante sed ex pharetra lacinia sit amet vel massa. Donec facilisis laoreet nulla eu bibendum. Donec ut ex risus. Fusce lorem lectus, pharetra pretium massa et, hendrerit vestibulum odio lorem ipsum dolor sit amet.</p> -->
-<!--   <ul class="actions stacked"> -->
-<!--     <li><a href="#" class="button">Learn More</a></li> -->
-<!--   </ul> -->
-<!-- </div> -->
-<!-- <div class="image"> -->
-<!--   <img src="https://eddelbuettel.github.io/html5-story/images/spotlight02.jpg" alt="" /> -->
-<!-- </div> -->
-<!-- </section> -->
+<!-- Three -->
+<section class="spotlight style1 orient-left content-align-left image-position-center onscroll-image-fade-in">
+<div class="content">
+  <h3>Use with GitHub Actions</h3>
+  <p>GitHub Actions is the <em>flavour of the day</em> right now with fairly unlimited build resources, along with the
+  rather stunning own-goal scored by the incument. In any event, usage is <strong>easy</strong>. Just commit any file
+  ending in <code>.yml</code> or <code>.yaml</code> in a directory <code><.github/workflows</code> within your GitHub
+  repo---and you are all set. Here is my (currently) most recent example <code>.github/workflows/ci.yaml</code> from the
+  <a href="https://github.com/eddelbuettel/inline">inline</a> repository.
+
+<pre><code>
+# Run CI for R using https://eddelbuettel.github.io/r-ci/
+
+name: ci
+
+on:
+  push:
+  pull_request:
+
+env:
+  USE_BSPM: "true"
+  _R_CHECK_FORCE_SUGGESTS_: "false"
+
+jobs:
+  build:
+    strategy:
+      matrix:
+        config:
+          #- {os: macOS-latest}
+          - {os: ubuntu-latest}
+
+    runs-on: ${{ matrix.config.os }}
+
+    steps:
+      - uses: actions/checkout@v2
+
+      - name: Bootstrap
+        run: |
+          curl -OLs https://eddelbuettel.github.io/r-travis/run.sh
+          chmod 0755 run.sh
+          ./run.sh bootstrap
+
+      - name: Dependencies
+        run: ./run.sh install_all
+
+      - name: Test
+        run: ./run.sh run_tests
+
+</code></pre>
+  
+  <!-- <ul class="actions stacked"> -->
+  <!--   <li><a href="#" class="button">Learn More</a></li> -->
+  <!-- </ul> -->
+</div>
+<div class="image">
+  <img src="https://eddelbuettel.github.io/html5-story/extra/surface-945444_1920.jpg" alt="" />
+</div>
+</section>
 
 <!-- <\!-- Four -\-> -->
 <!-- <section class="spotlight style1 orient-right content-align-left image-position-center onscroll-image-fade-in"> -->
@@ -398,7 +443,10 @@ notifications:
     <li><a href="https://www.linkedin.com/in/dirkeddelbuettel/" class="icon brands style2 fa-linkedin-in"><span class="label">LinkedIn</span></a></li>
     <li><a href="mailto:dirk@eddelbuettel.com" class="icon style2 fa-envelope"><span class="label">Email</span></a></li>
   </ul>
-  <p>Website based on Story which is &copy; Untitled and part of <a href="https://html5up.net">HTML5 UP</a>.</p>
+  <p>
+   Website based on Story which is &copy; Untitled and part of <a href="https://html5up.net">HTML5 UP</a>.
+   Photos from <a href="https://pixabay.com">pixabay</a> with <a href="https://github.com/eddelbuettel/html5-story/blob/master/extra/credits.md">explicit credits here</a>.
+  </p>
 </div>
 </footer>
 
