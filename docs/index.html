@@ -116,7 +116,7 @@ notifications:
   ending in <code>.yml</code> or <code>.yaml</code> in a directory <code>.github/workflows</code> within your GitHub
   repo---and you are all set. Here is my (currently) most recent example <code>.github/workflows/ci.yaml</code> from the
   <a href="https://github.com/eddelbuettel/inline">inline</a> repository. Note that the matrix build for macOS is turned
-  off as the package requires working Fortran support on each OS..
+  off <em>for this package</em> as it requires working Fortran support on each OS. To enable just remove the <code>#</code>.
 
 <pre><code>
 # Run CI for R using https://eddelbuettel.github.io/r-ci/
