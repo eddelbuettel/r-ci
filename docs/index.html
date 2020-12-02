@@ -28,13 +28,13 @@
   </p>
   <dl>
     <dt><code>./run.sh bootstrap</code></dt>
-    <dd><p>Sets up the R test environment, checks out the package sources, and installs auxiliary packages such as <code>testthat</code> or <code>tinytest</code>.</p></dd>
+    <dd><p>Sets up the R environment, installs auxiliary packages such as <code>testthat</code> or <code>tinytest</code>.</p></dd>
 
     <dt><code>./run.sh install_all</code></dt>
-    <dd><p>Parses the <code>DESCRIPTION</code> file and installs the required (and suggested) packages. <code>install_deps</code> is a lighterweight alternative.</p></dd>
+    <dd><p>Parses <code>DESCRIPTION</code> and installs the required (and suggested) packages. <code>install_deps</code> is a lighterweight alternative.</p></dd>
 
     <dt><code>./run.sh run_tests</code></dt>
-    <dd><p>Builds the package tarball and tests it.</p></dd>
+    <dd><p>Builds the package tarball, and runs tests on it.</p></dd>
   </dl>
   <ul class="actions stacked">
     <li><a href="#first" class="button big wide smooth-scroll-middle">See below for Travis and GH Actions</a></li>
@@ -51,7 +51,9 @@
   <h3>Use with Travis CI</h3>
   <p>Travis CI continues to be useful even if there is some current uncertainty about billing and pricing (particular on macOS). Basic use by Open Source project on Linux should be unaffected.</p>
 
-  <p>The following code examples is an <strong>actual</strong> file <code>.travis.yml</code> from the <a href="https://github.com/eddelbuettel/dang">dang</a> repository.
+  <p>The following code examples is an <strong>actual</strong> file <code>.travis.yml</code> from the <a  href="https://github.com/eddelbuettel/dang">dang</a> repository.
+  It runs a simple <em>matrix</em> build over macOS and Linux.
+  
 <pre><code>
 # Run CI for R using https://eddelbuettel.github.io/r-ci/
 
@@ -113,7 +115,8 @@ notifications:
   rather stunning own-goal scored by the incument. In any event, usage is <strong>easy</strong>. Just commit any file
   ending in <code>.yml</code> or <code>.yaml</code> in a directory <code>.github/workflows</code> within your GitHub
   repo---and you are all set. Here is my (currently) most recent example <code>.github/workflows/ci.yaml</code> from the
-  <a href="https://github.com/eddelbuettel/inline">inline</a> repository.
+  <a href="https://github.com/eddelbuettel/inline">inline</a> repository. Note that the matrix build for macOS is turned
+  off as the package requires working Fortran support on each OS..
 
 <pre><code>
 # Run CI for R using https://eddelbuettel.github.io/r-ci/
