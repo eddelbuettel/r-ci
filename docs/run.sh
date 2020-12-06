@@ -49,12 +49,14 @@ R_USE_BIOC_CMDS="source('${BIOC}');"\
 
 ShowBanner() {
     echo ""
+    echo "r-ci: Portable CI for R at Travis, GitHub Actions, Azure, ..."
+    echo ""
     echo "On Linux, r-ci defaults to using the most current R version, currently "
     echo "the \"4.0\" API introduced by R 4.0.0."
     echo ""
     echo "But one can select another version explicitly by setting R_VERSION to \"3.5\""
-    echo "in .travis.yml. Note that the corresponding PPAs will selected based on this"
-    echo "variable but the distribution in the .travis.yml matters as well as not all"
+    echo "in the YAML file. Note that the corresponding PPAs will selected based on this"
+    echo "variable but the distribution in the YAML file matters as well as not all"
     echo "releases distros have r-3.5 and r-4.0 repos. See the bin/linux/ubuntu/ dir on"
     echo "the CRAN mirrors if in doubt."
     echo ""
