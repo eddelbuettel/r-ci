@@ -21,7 +21,8 @@
   <p>Easy and portable CI for R packages</p>
   </header>
   <p class="major">
-  This repository provides the script <code>run.sh</code> for portable, flexible and lightweight use of Continuous Integration at Travis, GitHub Actions, Azure Pipelines and possibly others.
+  This repository provides a script <code>run.sh</code> for portable, flexible and lightweight Continuous Integration (CI) use of 
+  at Travis, GitHub Actions, Azure Pipelines and likely others such as GitLab---as well as in Docker for local testing and use.
   </p>
   <p class="major">
   This script contains the following key functions which are typically all a user needs to call:
@@ -31,10 +32,11 @@
     <dd><p>Sets up the R environment, installs auxiliary packages such as <code>testthat</code> or <code>tinytest</code>.</p></dd>
 
     <dt><code>./run.sh install_all</code></dt>
-    <dd><p>Parses <code>DESCRIPTION</code> and installs the required (and suggested) packages. <code>install_deps</code> is a lighterweight alternative.</p></dd>
+    <dd><p>Parses <code>DESCRIPTION</code> and installs the required (and suggested) packages. <code>install_deps</code> is a lighterweight
+    alternative pulling only dependencies but not suggestsed packages.</p></dd>
 
     <dt><code>./run.sh run_tests</code></dt>
-    <dd><p>Builds the package tarball, and runs tests on it.</p></dd>
+    <dd><p>Builds the package tarball, and runs tests on it resulting in the overall CI test pass or fail.</p></dd>
   </dl>
   <ul class="actions stacked">
     <li><a href="#first" class="button big wide smooth-scroll-middle">See below for Travis and GH Actions</a></li>
@@ -46,12 +48,75 @@
 </section>
 
 <!-- Two -->
+<section class="spotlight style1 orient-left content-align-left image-position-center onscroll-image-fade-in">
+<div class="content content-align-left">
+  <h3>Use with GitHub Actions</h3>
+  <p>GitHub Actions is currently <em>en vogue</em> and popular due to fairly unlimited build resources, along with the
+  stunning own-goal scored by the previous incumbent. Usage with <code>run.sh</code> is <strong>easy</strong>. Just commit any file
+  ending in <code>.yml</code> or <code>.yaml</code> in a directory <code>.github/workflows</code> within your GitHub
+  repo---and you are all set. No additional registration is needed.
+  <p>
+  Below is an example <code>.github/workflows/ci.yaml</code> from the
+  <a href="https://github.com/eddelbuettel/dang">dang</a> repository running a simple matrix build over Linux and macOS. Note that the matrix build for either
+  can be turned off by placing a simple comment <code>#</code> character in front as can be seen in many example YAML files.
+
+<pre><code>
+# Run CI for R using https://eddelbuettel.github.io/r-ci/
+
+name: ci
+
+on:
+  push:
+  pull_request:
+
+env:
+  USE_BSPM: "true"
+  _R_CHECK_FORCE_SUGGESTS_: "false"
+
+jobs:
+  ci:
+    strategy:
+      matrix:
+        config:
+          - {os: macOS-latest}
+          - {os: ubuntu-latest}
+
+    runs-on: ${{ matrix.config.os }}
+
+    steps:
+      - uses: actions/checkout@v2
+
+      - name: Bootstrap
+        run: |
+          curl -OLs https://eddelbuettel.github.io/r-ci/run.sh
+          chmod 0755 run.sh
+          ./run.sh bootstrap
+
+      - name: Dependencies
+        run: ./run.sh install_all
+
+      - name: Test
+        run: ./run.sh run_tests
+
+</code></pre>
+  
+  <!-- <ul class="actions stacked"> -->
+  <!--   <li><a href="#" class="button">Learn More</a></li> -->
+  <!-- </ul> -->
+</div>
+<div class="image">
+  <img src="https://eddelbuettel.github.io/html5-story/extra/surface-945444_1920.jpg" alt="" />
+</div>
+</section>
+
+<!-- Three -->
+
 <section class="spotlight style1 orient-right content-align-left image-position-center onscroll-image-fade-in" id="first">
 <div class="content content-align-left">
   <h3>Use with Travis CI</h3>
-  <p>Travis CI continues to be useful even if there is some current uncertainty about billing and pricing (particular on macOS). Basic use by Open Source project on Linux should be unaffected.</p>
+  <p>Travis CI continues to be useful for those with remaining free credits, or a paid plan, so very basic use by Open Source project on Linux should be unaffected.</p>
 
-  <p>The following code examples is an <strong>actual</strong> file <code>.travis.yml</code> from the <a  href="https://github.com/eddelbuettel/dang">dang</a> repository.
+  <p>The following code examples is an actual <code>.travis.yml</code> file, also from the <a  href="https://github.com/eddelbuettel/dang">dang</a> repository used above.
   It runs a simple <em>matrix</em> build over macOS and Linux.
   
 <pre><code>
@@ -104,66 +169,6 @@ notifications:
 </div>
 <div class="image">
   <img src="https://eddelbuettel.github.io/html5-story/extra/london-3833039_1920.jpg" alt="" />
-</div>
-</section>
-
-<!-- Three -->
-<section class="spotlight style1 orient-left content-align-left image-position-center onscroll-image-fade-in">
-<div class="content content-align-left">
-  <h3>Use with GitHub Actions</h3>
-  <p>GitHub Actions is the <em>flavour of the day</em> right now with fairly unlimited build resources, along with the
-  rather stunning own-goal scored by the incument. In any event, usage is <strong>easy</strong>. Just commit any file
-  ending in <code>.yml</code> or <code>.yaml</code> in a directory <code>.github/workflows</code> within your GitHub
-  repo---and you are all set. Here is my (currently) most recent example <code>.github/workflows/ci.yaml</code> from the
-  <a href="https://github.com/eddelbuettel/inline">inline</a> repository. Note that the matrix build for macOS is turned
-  off <em>for this package</em> as it requires working Fortran support on each OS. To enable just remove the <code>#</code>.
-
-<pre><code>
-# Run CI for R using https://eddelbuettel.github.io/r-ci/
-
-name: ci
-
-on:
-  push:
-  pull_request:
-
-env:
-  USE_BSPM: "true"
-  _R_CHECK_FORCE_SUGGESTS_: "false"
-
-jobs:
-  build:
-    strategy:
-      matrix:
-        config:
-          #- {os: macOS-latest}
-          - {os: ubuntu-latest}
-
-    runs-on: ${{ matrix.config.os }}
-
-    steps:
-      - uses: actions/checkout@v2
-
-      - name: Bootstrap
-        run: |
-          curl -OLs https://eddelbuettel.github.io/r-ci/run.sh
-          chmod 0755 run.sh
-          ./run.sh bootstrap
-
-      - name: Dependencies
-        run: ./run.sh install_all
-
-      - name: Test
-        run: ./run.sh run_tests
-
-</code></pre>
-  
-  <!-- <ul class="actions stacked"> -->
-  <!--   <li><a href="#" class="button">Learn More</a></li> -->
-  <!-- </ul> -->
-</div>
-<div class="image">
-  <img src="https://eddelbuettel.github.io/html5-story/extra/surface-945444_1920.jpg" alt="" />
 </div>
 </section>
 
