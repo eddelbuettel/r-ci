@@ -22,7 +22,7 @@
   </header>
   <p class="major">
   This repository provides a script <code>run.sh</code> for portable, flexible and lightweight Continuous Integration (CI) use of 
-  at Travis, GitHub Actions, Azure Pipelines and likely others such as GitLab---as well as in Docker for local testing and use.
+  at Travis, GitHub Actions, Azure Pipelines (all shown below) and likely others such as GitLab as well as in Docker for local testing and use.
   </p>
   <p class="major">
   This script contains the following key functions which are typically all a user needs to call:
@@ -48,7 +48,7 @@
 </section>
 
 <!-- Two -->
-<section class="spotlight style1 orient-left content-align-left image-position-center onscroll-image-fade-in">
+<section class="spotlight style1 orient-right content-align-left image-position-center onscroll-image-fade-in" id="first">
 <div class="content content-align-left">
   <h3>Use with GitHub Actions</h3>
   <p>GitHub Actions is currently <em>en vogue</em> and popular due to fairly unlimited build resources, along with the
@@ -110,9 +110,8 @@ jobs:
 </section>
 
 <!-- Three -->
-
-<section class="spotlight style1 orient-right content-align-left image-position-center onscroll-image-fade-in" id="first">
-<div class="content content-align-left">
+<section class="spotlight style1 orient-left content-align-left image-position-center onscroll-image-fade-in" id="first">
+<div class="content content-align-right">
   <h3>Use with Travis CI</h3>
   <p>Travis CI continues to be useful for those with remaining free credits, or a paid plan, so very basic use by Open Source project on Linux should be unaffected.</p>
 
@@ -172,19 +171,63 @@ notifications:
 </div>
 </section>
 
-<!-- <\!-- Four -\-> -->
-<!-- <section class="spotlight style1 orient-right content-align-left image-position-center onscroll-image-fade-in"> -->
-<!-- <div class="content"> -->
-<!--   <h2>Pharetra etiam nulla</h2> -->
-<!--   <p>Lorem ipsum dolor sit amet, consectetur adipiscing elit. Morbi id ante sed ex pharetra lacinia sit amet vel massa. Donec facilisis laoreet nulla eu bibendum. Donec ut ex risus. Fusce lorem lectus, pharetra pretium massa et, hendrerit vestibulum odio lorem ipsum dolor sit amet.</p> -->
-<!--   <ul class="actions stacked"> -->
-<!--     <li><a href="#" class="button">Learn More</a></li> -->
-<!--   </ul> -->
-<!-- </div> -->
-<!-- <div class="image"> -->
-<!--   <img src="https://eddelbuettel.github.io/html5-story/images/spotlight03.jpg" alt="" /> -->
-<!-- </div> -->
-<!-- </section> -->
+<!-- Four -->
+<section class="spotlight style1 orient-right content-align-left image-position-center onscroll-image-fade-in">
+<div class="content">
+  <h3>Use with Azure Pipelines</h3>
+
+  <p>Azure Pipelines are an alternative worth considering as they also offer fairly generous usage credits.
+  The example below is once again from the <a href="https://github.com/eddelbuettel/dang">dang</a> repository
+  and is provided in its file <code>.ci/ci.yaml</code> (but in its git repo on Azure; these pipelines can also 
+  access other repos for example at GitHub). As in the other examples, a matrix over Linux and macOS is setup</p>
+
+<pre><code>
+# Evolved from starter pipeline via r-azure-pipelines repo
+
+trigger:
+- master
+
+variables:
+- name: R_LIBS_USER
+  value: '$(Agent.BuildDirectory)/R/library'
+- name: CRAN
+  value: 'https://cloud.r-project.org'
+- name: _R_CHECK_FORCE_SUGGESTS_
+  value: false
+- name: USE_BSPM
+  value: true
+
+strategy:
+  matrix:
+    linux:
+      imageName: "ubuntu-latest"
+    macos:
+      imageName: "macos-latest"
+  maxParallel: 2
+  
+steps: 
+  - bash: curl -OLs https://eddelbuettel.github.io/r-travis/run.sh
+    displayName: download
+  - bash: chmod 0755 run.sh
+    displayName: mode
+  - bash: ./run.sh bootstrap
+    displayName: bootstrap
+  - bash: ./run.sh install_deps
+    displayName: deps
+  - bash: ./run.sh run_tests
+    displayName: tests
+        
+</code></pre>
+  
+  <!-- <ul class="actions stacked"> -->
+  <!--   <li><a href="#" class="button">Learn More</a></li> -->
+  <!-- </ul> -->
+</div>
+<div class="image">
+  <!-- <img src="https://eddelbuettel.github.io/html5-story/extra/architecture-3357028_1920.jpg" alt="" /> -->
+  <img src="extra/architecture-3357028_1920.jpg" alt="" />
+</div>
+</section>
 
 <!-- <\!-- Five -\-> -->
 <!-- <section class="wrapper style1 align-center"> -->
