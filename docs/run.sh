@@ -132,9 +132,23 @@ InstallPandoc() {
 }
 
 BootstrapLinux() {
+    ## Check for sudo_release and install if needed
+    test -x /usr/bin/sudo || apt-get install -y --no-install-recommends sudo
+    ## Check for lsb_release and install if needed
+    test -x /usr/bin/lsb_release || sudo apt-get install -y --no-install-recommends lsb-release
+    ## Check for add-apt-repository and install if needed
+    test -x /usr/bin/add-apt-repository || \
+        (echo 12 > /tmp/input.txt; echo 5 >> /tmp/input.txt; sudo apt-get install -y tzdata < /tmp/input.txt; sudo apt-get install -y --no-install-recommends software-properties-common)
+
     ShowBanner
 
     ## Set up our CRAN mirror.
+    ## Check for dirmngr and install if needed
+    test -x /usr/bin/dirmngr || sudo apt-get install -y --no-install-recommends dirmngr
+    ## Check for gpg and install gnupg if needed (on bare-bones Ubuntu)
+    test -x /usr/bin/gpg || sudo apt install -y --no-install-recommends gnupg
+    ## Check for gpg-agent and install if needed
+    test -x /usr/bin/gpg-agent || sudo apt install -y --no-install-recommends gpg-agent
     ## Get the key
     sudo apt-key adv --keyserver keyserver.ubuntu.com --recv-keys E298A3A825C0D65DFD57CBB651716619E084DAB9
     ## Add the repo
