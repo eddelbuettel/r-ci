@@ -132,6 +132,9 @@ InstallPandoc() {
 }
 
 BootstrapLinux() {
+    ## Hotfix for key issue
+    echo 'Acquire::AllowInsecureRepositories "true";' | tee /etc/apt/apt.conf.d/90local-secure >/dev/null
+
     ## Check for sudo_release and install if needed
     test -x /usr/bin/sudo || apt-get install -y --no-install-recommends sudo
     ## Check for lsb_release and install if needed
