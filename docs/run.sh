@@ -61,7 +61,7 @@ ShowBanner() {
     echo "the CRAN mirrors if in doubt."
     echo ""
     echo "Current value of the R API variable (overrideable from .travis.yml): ${R_VERSION}"
-    echo "Current Ubuntu distribution per `lsb_release`: '$(lsb_release -ds)' aka '$(lsb_release -cs)'"
+    echo "Current Ubuntu distribution per 'lsb_release': '$(lsb_release -ds)' aka '$(lsb_release -cs)'"
     echo ""
 }
 
