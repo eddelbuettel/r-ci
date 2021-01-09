@@ -8,14 +8,16 @@ repository, which is itself a maintained fork of the (now deprecated) original
 like its design and features -- so I have been keeping it around, maintained and extended it. It is
 my 'go-to' CI setup for a few dozen repositories affecting a fairly decent number of users.
 
-### Status
+### Documentation
 
-Actively used by a few dozen repositories.
+See the [r-ci webpage](https://eddelbuettel.github.io/r-ci) for a brief overview of usage with
+GitHub Actions, Travis, Azure DevOps and Docker. See [this r^4 blog
+post](http://dirk.eddelbuettel.com/blog/2021/01/07#032_portable_ci_with_r-ci) for a short
+[video](https://youtu.be/W5yYkfFKBG4) and [background
+slides](https://dirk.eddelbuettel.com/papers/r4_portable_ci.pdf).
 
-As it is used beyond just one Continuous Integration (CI) backend, we decided to change the name
-away from reflecting only one of the backends.
 
-### Basic Usage
+### Basic Usage 
 
 A minimal example of use with Travis follows:
 
@@ -38,15 +40,14 @@ script:
 This downloads the `run.sh` script, uses it to _bootstrap_ the test environment, then installs
 dependencies via `install_deps` and finally runs tests. For a realistic but real example see _e.g._
 [this .travis.yml file of package
-digest](https://github.com/eddelbuettel/digest/blob/master/.travis.yml).
-
-For another example, see package [tidyCpp](https://github.com/eddelbuettel/tidycpp/) which shows how
-to use the `run.sh` script [with Travis
-CI](https://github.com/eddelbuettel/tidycpp/blob/master/.travis.yml) as well as [with GitHub
-Actions](https://github.com/eddelbuettel/tidycpp/blob/master/.github/workflows/R-CMD-check.yaml).
-
-Numerous variations are possible: running 'test matrices' across macOS and Linux, using BSPM for
-binaries (both of those [are used by
+digest](https://github.com/eddelbuettel/digest/blob/master/.travis.yml).  For another example, see
+package [tidyCpp](https://github.com/eddelbuettel/tidycpp/) which shows how to use the `run.sh`
+script [with Travis CI](https://github.com/eddelbuettel/tidycpp/blob/master/.travis.yml) as well as
+[with GitHub
+Actions](https://github.com/eddelbuettel/tidycpp/blob/master/.github/workflows/R-CMD-check.yaml), or
+package [dang](https://github.com/eddelbuettel/tidycpp/) (featured in the
+[video](https://youtu.be/W5yYkfFKBG4) mentioned above) Numerous variations are possible: running
+'test matrices' across macOS and Linux, using BSPM for binaries (both of those [are used by
 digest](https://github.com/eddelbuettel/digest/blob/master/.travis.yml), running with several `g++`
 versions (as used by
 [RcppSimdjson](https://github.com/eddelbuettel/rcppsimdjson/blob/master/.travis.yml), ...).
@@ -58,10 +59,6 @@ Azure Pipelines can be used (as was done by a test repo on Azure).
 
 There are also other options of use with PPAs and more---for fullest details see the source of the
 shell script `run.sh`.
-
-### More
-
-See the [public webpage for r-ci](http://eddelbuettel.github.io/r-ci/) for more.
 
 ### Author
 
