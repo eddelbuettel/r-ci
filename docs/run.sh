@@ -60,7 +60,7 @@ ShowBanner() {
     echo "releases distros have r-3.5 and r-4.0 repos. See the bin/linux/ubuntu/ dir on"
     echo "the CRAN mirrors if in doubt."
     echo ""
-    echo "Current value of the R API variable (overrideable from .travis.yml): ${R_VERSION}"
+    echo "Current value of the (overrideable) R API variable 'R_VERSION': ${R_VERSION}"
     echo "Current Ubuntu distribution per 'lsb_release': '$(lsb_release -ds)' aka '$(lsb_release -cs)'"
     echo ""
 }
