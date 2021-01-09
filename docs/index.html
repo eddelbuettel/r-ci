@@ -22,7 +22,7 @@
   </header>
   <p class="major">
   This repository provides a script <code>run.sh</code> for portable, flexible and lightweight Continuous Integration (CI) use at 
-  GitHub Actions, Travis, Azure Pipelines (all shown below via real examples) and likely others such as GitLab as well as in Docker for local testing and use.
+  GitHub Actions, Travis, Azure Pipelines and Docker for local testing and use -- all shown below via real examples -- and likely others such as GitLab.
   </p>
   <p class="major">
   This script contains the following key functions which are typically all a user needs to call:
@@ -31,15 +31,14 @@
     <dt><code>./run.sh bootstrap</code></dt>
     <dd><p>Sets up the R environment, installs auxiliary packages such as <code>testthat</code> or <code>tinytest</code>.</p></dd>
 
-    <dt><code>./run.sh install_all</code></dt>
-    <dd><p>Parses <code>DESCRIPTION</code> and installs the required (and suggested) packages. <code>install_deps</code> is a lighterweight
-    alternative pulling only dependencies but not suggestsed packages.</p></dd>
+    <dt><code>./run.sh install_deps</code></dt>
+    <dd><p>Parses <code>DESCRIPTION</code> and installs the required packages. <code>install_all</code> is a (slightly heavier) alternative pulling not only dependencies but also suggested packages.</p></dd>
 
     <dt><code>./run.sh run_tests</code></dt>
     <dd><p>Builds the package tarball, and runs tests on it resulting in the overall CI test pass or fail.</p></dd>
   </dl>
   <ul class="actions stacked">
-    <li><a href="#first" class="button big wide smooth-scroll-middle">See below for GH Actions, Travis and Azure</a></li>
+    <li><a href="#first" class="button big wide smooth-scroll-middle">See below for real examples</a></li>
   </ul>
 </div>
 <div class="image">
@@ -227,6 +226,62 @@ steps:
   <img src="https://eddelbuettel.github.io/html5-story/extra/architecture-3357028_1920.jpg" alt="" />
 </div>
 </section>
+
+
+<!-- Five -->
+<section class="spotlight style1 orient-left content-align-left image-position-center onscroll-image-fade-in" id="first">
+<div class="content content-align-right">
+  <h3>Use with Docker</h3>
+  <p>A key advantage of the simple <code>run.sh</code> script is its versatility: just drop it into a Docker session to test a local repo!</p>
+
+  <p>The following short video, part of post <em>#32: Portable Continuous Integration using r-ci</em> in the <em>r^4</em> series of <a
+  href="http://dirk.eddelbuettel.com/blog/code/r4">r^4 posts</a>, demonstrates Docker use for CI with the <a  href="https://github.com/eddelbuettel/dang">dang</a> repository used above. </p>
+
+  <p></p>
+
+  <p align="center">
+  <iframe width="560" height="315" src="https://www.youtube.com/embed/W5yYkfFKBG4/" frameborder="0" allow="accelerometer; autoplay; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
+  </p>
+
+  <p></p> 
+
+  The commands used in the video are, essentially, just these:
+
+<pre><code>
+# launch docker using 'r-bspm:20.04' from rocker
+docker run --rm -ti -v ${PWD}:/work -w /work rocker/r-bspm:20.04
+
+# fetch the script
+wget https://eddelbuettel.github.io/r-ci/run.sh && chmod 0755 run.sh
+
+# bootstrap
+./run.sh bootstrap
+
+# install just depends
+./run.sh install_deps
+
+# test (with just depends)
+export _R_CHECK_FORCE_SUGGESTS_="false"; ./run.sh run_tests
+
+# alternate: install all
+./run.sh install_all
+
+# test (with all)
+export _R_CHECK_FORCE_SUGGESTS_="true"; ./run.sh run_tests
+</code></pre>
+  
+
+  <!-- <ul class="actions stacked"> -->
+  <!--   <li><a href="#" class="button">Learn More</a></li> -->
+  <!-- </ul> -->
+</div>
+<div class="image">
+  <img src="https://eddelbuettel.github.io/html5-story/extra/architecture-1048092_1920.jpg" alt="" />
+</div>
+</section>
+
+
+
 
 <!-- <\!-- Five -\-> -->
 <!-- <section class="wrapper style1 align-center"> -->
