@@ -18,12 +18,14 @@ R_VERSION=${R_VERSION:-"4.0"}
 ## Optional drat repos, unset by default
 DRAT_REPOS=${DRAT_REPOS:-""}
 
-## Optional BSPM use, default to false
+## Optional BSPM use, defaults to false
 USE_BSPM=${USE_BSPM:-"FALSE"}
 
 ## Optional additional PPAs, unset by default
 ADDED_PPAS=${ADDED_PPAS:-""}
 
+## Optional trimming of extra apt source list entry, defaults to fals
+TRIM_APT_SOURCES=${TRIM_APT_SOURCES:-"FALSE"}
 
 #PANDOC_VERSION='1.13.1'
 #PANDOC_DIR="${HOME}/opt/pandoc"
@@ -137,13 +139,18 @@ BootstrapLinux() {
     ## Hotfix for key issue
     echo 'Acquire::AllowInsecureRepositories "true";' | sudo tee /etc/apt/apt.conf.d/90local-secure >/dev/null
 
-    ## Check for sudo and install if needed
+    ## Check for lsb_release and install if needed
     test -x /usr/bin/lsb_release || sudo apt-get install -y --no-install-recommends lsb-release
-    ## Check for add-apt-repository and install if needed
+    ## Check for add-apt-repository and install if needed, using a fudge around the (manual) tz config dialog
     test -x /usr/bin/add-apt-repository || \
         (echo 12 > /tmp/input.txt; echo 5 >> /tmp/input.txt; sudo apt-get install -y tzdata < /tmp/input.txt; sudo apt-get install -y --no-install-recommends software-properties-common)
 
     ShowBanner
+
+    ## If opted in, trim apt sources
+    if [[ "${TRIM_APT_SOURCES}" != "FALSE" ]]; then
+        sudo rm -vf /etc/apt/sources.list.d/*.list
+    fi
 
     ## Set up our CRAN mirror.
     ## Check for dirmngr and install if needed
@@ -481,7 +488,8 @@ Retry() {
 
 ShowHelpAndExit() {
     echo "Usage: run.sh COMMAND"
-    echo "Derived from the venerable r-travis project, but still maintained lovingly by @eddelbuettel."
+    echo "Derived from the venerable r-travis project, and still maintained lovingly by @eddelbuettel."
+    echo "See https://eddelbuettel.github.io/r-ci for more."
     exit 0
 }
 
