@@ -49,6 +49,8 @@ R_USE_BIOC_CMDS="source('${BIOC}');"\
 " error=function(e) {if (!grepl('already in use', e$message)) {e}});"\
 " options(repos=biocinstallRepos());"
 
+COVERAGE_TYPE=${COVERAGE_TYPE:-"tests"}
+
 ShowBanner() {
     echo ""
     echo "r-ci: Portable CI for R at Travis, GitHub Actions, Azure, ..."
@@ -435,7 +437,7 @@ Coverage() {
     ## assumes that the Rutter PPAs are in fact known, which is a given here
     AptGetInstall r-cran-covr
 
-    Rscript -e "covr::codecov()"
+    Rscript -e "covr::codecov(type = '${COVERAGE_TYPE}')"
 }
 
 RunTests() {
