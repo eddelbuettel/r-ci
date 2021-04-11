@@ -27,6 +27,9 @@ ADDED_PPAS=${ADDED_PPAS:-""}
 ## Optional trimming of extra apt source list entry, defaults to fals
 TRIM_APT_SOURCES=${TRIM_APT_SOURCES:-"FALSE"}
 
+## Optional setting of type argument in covr::coverage() call below, defaults to "tests"
+COVERAGE_TYPE=${COVERAGE_TYPE:-"tests"}
+
 #PANDOC_VERSION='1.13.1'
 #PANDOC_DIR="${HOME}/opt/pandoc"
 #PANDOC_URL="https://s3.amazonaws.com/rstudio-buildtools/pandoc-${PANDOC_VERSION}.zip"
@@ -48,8 +51,6 @@ R_USE_BIOC_CMDS="source('${BIOC}');"\
 " tryCatch(useDevel(${BIOC_USE_DEVEL}),"\
 " error=function(e) {if (!grepl('already in use', e$message)) {e}});"\
 " options(repos=biocinstallRepos());"
-
-COVERAGE_TYPE=${COVERAGE_TYPE:-"tests"}
 
 ShowBanner() {
     echo ""
