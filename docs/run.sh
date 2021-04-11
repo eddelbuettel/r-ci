@@ -442,7 +442,7 @@ Coverage() {
 
     Rscript -e "cat('using coverage type:', '${COVERAGE_TYPE}')"
 
-    Rscript -e "covr::codecov(type = '${COVERAGE_TYPE}', quite = FALSE)"
+    Rscript -e "covr::codecov(type = '${COVERAGE_TYPE}', quiet = FALSE)"
 }
 
 RunTests() {
