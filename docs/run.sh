@@ -68,6 +68,8 @@ ShowBanner() {
     echo "Current value of the (overrideable) R API variable 'R_VERSION': ${R_VERSION}"
     echo "Current Ubuntu distribution per 'lsb_release': '$(lsb_release -ds)' aka '$(lsb_release -cs)'"
     echo ""
+    echo "Current coverage type per 'COVERAGE_TYPE': ${COVERAGE_TYPE}"
+    echo ""
 }
 
 Bootstrap() {
@@ -438,7 +440,9 @@ Coverage() {
     ## assumes that the Rutter PPAs are in fact known, which is a given here
     AptGetInstall r-cran-covr
 
-    Rscript -e "covr::codecov(type = '${COVERAGE_TYPE}')"
+    Rscript -e "cat('using coverage type:', '${COVERAGE_TYPE}')"
+
+    Rscript -e "covr::codecov(type = '${COVERAGE_TYPE}', quite = FALSE)"
 }
 
 RunTests() {
