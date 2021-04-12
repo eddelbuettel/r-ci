@@ -56,19 +56,22 @@ ShowBanner() {
     echo ""
     echo "r-ci: Portable CI for R at Travis, GitHub Actions, Azure, ..."
     echo ""
-    echo "On Linux, r-ci defaults to using the most current R version, currently "
+    echo "On Linux, r-ci defaults to using the most current R API version, currently "
     echo "the \"4.0\" API introduced by R 4.0.0."
     echo ""
-    echo "But one can select another version explicitly by setting R_VERSION to \"3.5\""
+    echo "But one can select another API version explicitly by setting R_VERSION to \"3.5\""
     echo "in the YAML file. Note that the corresponding PPAs will selected based on this"
     echo "variable but the distribution in the YAML file matters as well as not all"
     echo "releases distros have r-3.5 and r-4.0 repos. See the bin/linux/ubuntu/ dir on"
     echo "the CRAN mirrors if in doubt."
     echo ""
+    echo "The actual version of R that is used will not be the exact value in 'R_VERSION'."
+    echo "Rather it will typically be the latest version in the repository with that API."
+    echo "For R_VERSION=\"3.5\" this will typically be 3.6.3. This is displayed in the"
+    echo "session info in the bottom of the 'Bootstrap' section of the log."
+    echo ""
     echo "Current value of the (overrideable) R API variable 'R_VERSION': ${R_VERSION}"
     echo "Current Ubuntu distribution per 'lsb_release': '$(lsb_release -ds)' aka '$(lsb_release -cs)'"
-    echo ""
-    echo "Current coverage type per 'COVERAGE_TYPE': ${COVERAGE_TYPE}"
     echo ""
 }
 
@@ -203,6 +206,11 @@ BootstrapLinux() {
     # Update after adding all repositories.  Retry several times to work around
     # flaky connection to Launchpad PPAs.
     Retry sudo apt-get update -qq
+
+    # Apr 2021: For R 3.5 API first remove installed R version which may be 4.0 
+    if [[ "${R_VERSION}" == "3.5" ]]; then
+        sudo apt-get remove -y r-base-core
+    fi
 
     # Install an R development environment. qpdf is also needed for
     # --as-cran checks:
