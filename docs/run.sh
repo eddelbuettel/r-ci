@@ -27,6 +27,9 @@ ADDED_PPAS=${ADDED_PPAS:-""}
 ## Optional trimming of extra apt source list entry, defaults to fals
 TRIM_APT_SOURCES=${TRIM_APT_SOURCES:-"FALSE"}
 
+## Optional setting of type argument in covr::coverage() call below, defaults to "tests"
+COVERAGE_TYPE=${COVERAGE_TYPE:-"tests"}
+
 #PANDOC_VERSION='1.13.1'
 #PANDOC_DIR="${HOME}/opt/pandoc"
 #PANDOC_URL="https://s3.amazonaws.com/rstudio-buildtools/pandoc-${PANDOC_VERSION}.zip"
@@ -53,14 +56,19 @@ ShowBanner() {
     echo ""
     echo "r-ci: Portable CI for R at Travis, GitHub Actions, Azure, ..."
     echo ""
-    echo "On Linux, r-ci defaults to using the most current R version, currently "
+    echo "On Linux, r-ci defaults to using the most current R API version, currently "
     echo "the \"4.0\" API introduced by R 4.0.0."
     echo ""
-    echo "But one can select another version explicitly by setting R_VERSION to \"3.5\""
+    echo "But one can select another API version explicitly by setting R_VERSION to \"3.5\""
     echo "in the YAML file. Note that the corresponding PPAs will selected based on this"
     echo "variable but the distribution in the YAML file matters as well as not all"
     echo "releases distros have r-3.5 and r-4.0 repos. See the bin/linux/ubuntu/ dir on"
     echo "the CRAN mirrors if in doubt."
+    echo ""
+    echo "The actual version of R that is used will not be the exact value in 'R_VERSION'."
+    echo "Rather it will typically be the latest version in the repository with that API."
+    echo "For R_VERSION=\"3.5\" this will typically be 3.6.3. This is displayed in the"
+    echo "session info in the bottom of the 'Bootstrap' section of the log."
     echo ""
     echo "Current value of the (overrideable) R API variable 'R_VERSION': ${R_VERSION}"
     echo "Current Ubuntu distribution per 'lsb_release': '$(lsb_release -ds)' aka '$(lsb_release -cs)'"
@@ -435,7 +443,7 @@ Coverage() {
     ## assumes that the Rutter PPAs are in fact known, which is a given here
     AptGetInstall r-cran-covr
 
-    Rscript -e "covr::codecov()"
+    Rscript -e "covr::codecov(type = '${COVERAGE_TYPE}', quiet = FALSE)"
 }
 
 RunTests() {
