@@ -207,21 +207,12 @@ BootstrapLinux() {
     # flaky connection to Launchpad PPAs.
     Retry sudo apt-get update -qq
 
-    # Apr 2021: For R 3.5 API first remove installed R version which may be 4.0 
-    if [[ "${R_VERSION}" == "3.5" ]]; then
-        sudo apt-get remove -y r-base-core
-    fi
-
     # Install an R development environment. qpdf is also needed for
     # --as-cran checks:
     #   https://stat.ethz.ch/pipermail/r-help//2012-September/335676.html
     # May 2020: we also need devscripts for checkbashism
     # Sep 2020: add bspm, remotes
-    Retry sudo apt-get install -y --no-install-recommends r-base-dev r-recommended qpdf devscripts r-cran-remotes
-    
-    if [[ "${USE_BSPM}" != "FALSE" ]]; then
-        Retry sudo apt-get install -y --no-install-recommends r-cran-bspm
-    fi
+    Retry sudo apt-get install -y --no-install-recommends r-base-dev r-recommended qpdf devscripts r-cran-remotes r-cran-bspm
 
     #sudo cp -ax /usr/lib/R/site-library/littler/examples/{build.r,check.r,install*.r,update.r} /usr/local/bin
     ## for now also from littler from GH
