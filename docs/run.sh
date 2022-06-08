@@ -168,7 +168,7 @@ BootstrapLinux() {
     ## Check for gpg-agent and install if needed
     test -x /usr/bin/gpg-agent || sudo apt install -y --no-install-recommends gpg-agent
     ## Get the key if it is missing
-    if !test -f /etc/apt/trusted.gpg.d/cran_ubuntu_key.asc; then
+    if ! test -f /etc/apt/trusted.gpg.d/cran_ubuntu_key.asc; then
        wget -qO- https://cloud.r-project.org/bin/linux/ubuntu/marutter_pubkey.asc | sudo tee -a /etc/apt/trusted.gpg.d/cran_ubuntu_key.asc
     fi
     ## Add the repo
