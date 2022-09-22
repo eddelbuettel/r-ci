@@ -60,6 +60,10 @@ Azure Pipelines can be used (as was done by a test repo on Azure).
 There are also other options of use with PPAs and more---for fullest details see the source of the
 shell script `run.sh`.
 
+As of September 2022, we rely on [r2u](https://eddelbuettel.github.io/r2u/) to supply a full set of
+binaries for CRAN for use on Ubuntu LTS. You can use it via `install_deps()` or `install_all()`
+without having to supply the `r-cran-*` packages explicitly.
+
 ### Author
 
 Dirk Eddelbuettel (for this maintained fork)

@@ -40,7 +40,8 @@ R_USE_BIOC_CMDS="source('${BIOC}');"\
 ShowBanner() {
     echo ""
     echo "r-ci: Portable CI for R at Travis, GitHub Actions, Azure, ..."
-    echo "r2u based variant. May be unfinished and still change. Worked in first tests."
+    echo ""
+    echo "This r2u based variant is now the default. Use https://eddelbuettel.github.io/r-ci/run.sh directly."
     echo ""
     echo "Current Ubuntu distribution per 'lsb_release': '$(lsb_release -ds)' aka '$(lsb_release -cs)'"
     echo ""

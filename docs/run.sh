@@ -12,35 +12,20 @@ BIOC=${BIOC:-"https://bioconductor.org/biocLite.R"}
 BIOC_USE_DEVEL=${BIOC_USE_DEVEL:-"TRUE"}
 OS=$(uname -s)
 
-## Default version: Now use 4.0, and 3.5 should still work
-R_VERSION=${R_VERSION:-"4.0"}
-
 ## Optional drat repos, unset by default
 DRAT_REPOS=${DRAT_REPOS:-""}
 
-## Optional BSPM use, defaults to false
-USE_BSPM=${USE_BSPM:-"FALSE"}
+## Optional BSPM use, defaults to true for r2u
+USE_BSPM=${USE_BSPM:-"TRUE"}
 
 ## Optional additional PPAs, unset by default
 ADDED_PPAS=${ADDED_PPAS:-""}
 
-## Optional trimming of extra apt source list entry, defaults to fals
-TRIM_APT_SOURCES=${TRIM_APT_SOURCES:-"FALSE"}
+## Optional trimming of extra apt source list entry, defaults to true
+TRIM_APT_SOURCES=${TRIM_APT_SOURCES:-"TRUE"}
 
 ## Optional setting of type argument in covr::coverage() call below, defaults to "tests"
 COVERAGE_TYPE=${COVERAGE_TYPE:-"tests"}
-
-#PANDOC_VERSION='1.13.1'
-#PANDOC_DIR="${HOME}/opt/pandoc"
-#PANDOC_URL="https://s3.amazonaws.com/rstudio-buildtools/pandoc-${PANDOC_VERSION}.zip"
-
-# MacTeX installs in a new $PATH entry, and there's no way to force
-# the *parent* shell to source it from here. So we just manually add
-# all the entries to a location we already know to be on $PATH.
-#
-# TODO(craigcitro): Remove this once we can add `/usr/texbin` to the
-# root path.
-PATH="${PATH}:/usr/texbin"
 
 R_BUILD_ARGS=${R_BUILD_ARGS-"--no-build-vignettes --no-manual"}
 R_CHECK_ARGS=${R_CHECK_ARGS-"--no-vignettes --no-manual --as-cran"}
@@ -56,21 +41,6 @@ ShowBanner() {
     echo ""
     echo "r-ci: Portable CI for R at Travis, GitHub Actions, Azure, ..."
     echo ""
-    echo "On Linux, r-ci defaults to using the most current R API version, currently "
-    echo "the \"4.0\" API introduced by R 4.0.0."
-    echo ""
-    echo "But one can select another API version explicitly by setting R_VERSION to \"3.5\""
-    echo "in the YAML file. Note that the corresponding PPAs will selected based on this"
-    echo "variable but the distribution in the YAML file matters as well as not all"
-    echo "releases distros have r-3.5 and r-4.0 repos. See the bin/linux/ubuntu/ dir on"
-    echo "the CRAN mirrors if in doubt."
-    echo ""
-    echo "The actual version of R that is used will not be the exact value in 'R_VERSION'."
-    echo "Rather it will typically be the latest version in the repository with that API."
-    echo "For R_VERSION=\"3.5\" this will typically be 3.6.3. This is displayed in the"
-    echo "session info in the bottom of the 'Bootstrap' section of the log."
-    echo ""
-    echo "Current value of the (overrideable) R API variable 'R_VERSION': ${R_VERSION}"
     echo "Current Ubuntu distribution per 'lsb_release': '$(lsb_release -ds)' aka '$(lsb_release -cs)'"
     echo ""
 }
@@ -84,18 +54,6 @@ Bootstrap() {
         BootstrapLinux
     else
         echo "Unknown OS: ${OS}"
-        exit 1
-    fi
-
-    if [[ "4.0" == "${R_VERSION}" ]]; then
-        echo "Using R 4.0.*"
-    elif [[ "3.5" == "${R_VERSION}" ]]; then
-        echo "Using R 3.5.*"
-    elif [[ "3.4" == "${R_VERSION}" ]]; then
-        echo "Using R 3.4 is no longer supported."
-        exit 1
-    else
-        echo "Unknown R_VERSION: ${R_VERSION}"
         exit 1
     fi
 
@@ -130,15 +88,6 @@ SetRepos() {
 InstallPandoc() {
     ## deprecated 2020-Sep
     echo "Deprecated"
-    # local os_path="$1"
-    # mkdir -p "${PANDOC_DIR}"
-    # curl -o /tmp/pandoc-${PANDOC_VERSION}.zip ${PANDOC_URL}
-    # unzip -j /tmp/pandoc-${PANDOC_VERSION}.zip "pandoc-${PANDOC_VERSION}/${os_path}/pandoc" -d "${PANDOC_DIR}"
-    # chmod +x "${PANDOC_DIR}/pandoc"
-    # sudo ln -s "${PANDOC_DIR}/pandoc" /usr/local/bin
-    # unzip -j /tmp/pandoc-${PANDOC_VERSION}.zip "pandoc-${PANDOC_VERSION}/${os_path}/pandoc-citeproc" -d "${PANDOC_DIR}"
-    # chmod +x "${PANDOC_DIR}/pandoc-citeproc"
-    # sudo ln -s "${PANDOC_DIR}/pandoc-citeproc" /usr/local/bin
 }
 
 BootstrapLinux() {
@@ -160,50 +109,43 @@ BootstrapLinux() {
         sudo rm -vf /etc/apt/sources.list.d/*.list
     fi
 
+    ## from r2u setup script
+    sudo apt update -qq && sudo apt install --yes --no-install-recommends wget ca-certificates dirmngr gnupg gpg-agent
+    wget -q -O- https://eddelbuettel.github.io/r2u/assets/dirk_eddelbuettel_key.asc | sudo tee -a /etc/apt/trusted.gpg.d/cranapt_key.asc
+    echo "deb [arch=amd64] https://r2u.stat.illinois.edu/ubuntu $(lsb_release -cs) main" | sudo tee -a /etc/apt/sources.list.d/cranapt.list
+    wget -q -O- https://cloud.r-project.org/bin/linux/ubuntu/marutter_pubkey.asc  | sudo tee -a /etc/apt/trusted.gpg.d/cran_ubuntu_key.asc
+    echo "deb [arch=amd64] https://cloud.r-project.org/bin/linux/ubuntu $(lsb_release -cs)-cran40/" | sudo tee -a /etc/apt/sources.list.d/cran_r.list
+    echo "Package: *" | sudo tee -a /etc/apt/preferences.d/99cranapt
+    echo "Pin: release o=CRAN-Apt Project" | sudo tee -a /etc/apt/preferences.d/99cranapt
+    echo "Pin: release l=CRAN-Apt Packages" | sudo tee -a /etc/apt/preferences.d/99cranapt
+    echo "Pin-Priority: 700" | sudo tee -a /etc/apt/preferences.d/99cranapt
+
+
     ## Set up our CRAN mirror.
-    ## Check for dirmngr and install if needed
-    test -x /usr/bin/dirmngr || sudo apt-get install -y --no-install-recommends dirmngr
-    ## Check for gpg and install gnupg if needed (on bare-bones Ubuntu)
-    test -x /usr/bin/gpg || sudo apt install -y --no-install-recommends gnupg
-    ## Check for gpg-agent and install if needed
-    test -x /usr/bin/gpg-agent || sudo apt install -y --no-install-recommends gpg-agent
     ## Get the key if it is missing
     if ! test -f /etc/apt/trusted.gpg.d/cran_ubuntu_key.asc; then
        wget -qO- https://cloud.r-project.org/bin/linux/ubuntu/marutter_pubkey.asc | sudo tee -a /etc/apt/trusted.gpg.d/cran_ubuntu_key.asc
     fi
     ## Add the repo
-    if [[ "${R_VERSION}" == "4.0" ]]; then
-        ## need pinning to ensure repo sorts higher
-        echo "Package: *" | sudo tee /etc/apt/preferences.d/c2d4u-pin >/dev/null
-        echo "Pin: release o=LP-PPA-c2d4u.team-c2d4u4.0+" | sudo tee -a /etc/apt/preferences.d/c2d4u-pin >/dev/null
-        echo "Pin-Priority: 750" | sudo tee -a /etc/apt/preferences.d/c2d4u-pin >/dev/null
-        ## now add repo (and update index)
-        sudo add-apt-repository "deb ${CRAN}/bin/linux/ubuntu $(lsb_release -cs)-cran40/"
-    elif [[ "${R_VERSION}" == "3.5" ]]; then
-        sudo add-apt-repository "deb ${CRAN}/bin/linux/ubuntu $(lsb_release -cs)-cran35/"
-    elif [[ "${R_VERSION}" == "3.4" ]]; then
-        echo "Using R 3.4 is no longer supported."
-        exit 1
-    fi
+    ## need pinning to ensure repo sorts higher, note we also pin r2u
+    echo "Package: *" | sudo tee /etc/apt/preferences.d/c2d4u-pin >/dev/null
+    echo "Pin: release o=LP-PPA-c2d4u.team-c2d4u4.0+" | sudo tee -a /etc/apt/preferences.d/c2d4u-pin >/dev/null
+    echo "Pin-Priority: 600" | sudo tee -a /etc/apt/preferences.d/c2d4u-pin >/dev/null
+    ## now add repo (and update index)
+    sudo add-apt-repository -y "deb ${CRAN}/bin/linux/ubuntu $(lsb_release -cs)-cran40/"
 
     # Add marutter's c2d4u repository.
-    if [[ "${R_VERSION}" == "4.0" ]]; then
-        ## R 4.0 and c2d4u/4.0 variant
-        sudo add-apt-repository -y "ppa:marutter/rrutter4.0"
-        sudo add-apt-repository -y "ppa:c2d4u.team/c2d4u4.0+"
-        ## Added PPAs, if given
-        if [[ "${ADDED_PPAS}" != "" ]]; then
-            for ppa in "${ADDED_PPAS}"; do
-                sudo add-apt-repository -y "${ppa}"
-            done
-        fi
-    elif [[ "${R_VERSION}" == "3.5" ]]; then
-        sudo add-apt-repository -y "ppa:marutter/rrutter3.5"
-        sudo add-apt-repository -y "ppa:marutter/c2d4u3.5"
-    elif [[ "${R_VERSION}" == "3.4" ]]; then
-        exit "R 3.4 is too old."
-        exit 1
+    # R 4.0 (not needed as CRAN current) and c2d4u/4.0 variant as backup
+    #sudo add-apt-repository -y "ppa:marutter/rrutter4.0"
+    sudo add-apt-repository -y "ppa:c2d4u.team/c2d4u4.0+"
+
+    ## Added PPAs, if given
+    if [[ "${ADDED_PPAS}" != "" ]]; then
+        for ppa in "${ADDED_PPAS}"; do
+            sudo add-apt-repository -y "${ppa}"
+        done
     fi
+
 
     # Update after adding all repositories.  Retry several times to work around
     # flaky connection to Launchpad PPAs.
@@ -214,7 +156,7 @@ BootstrapLinux() {
     #   https://stat.ethz.ch/pipermail/r-help//2012-September/335676.html
     # May 2020: we also need devscripts for checkbashism
     # Sep 2020: add bspm, remotes
-    Retry sudo apt-get install -y --no-install-recommends r-base-dev r-recommended qpdf devscripts r-cran-bspm r-cran-remotes
+    Retry sudo apt-get install -y --no-install-recommends r-base-dev r-recommended qpdf devscripts r-cran-remotes
 
     #sudo cp -ax /usr/lib/R/site-library/littler/examples/{build.r,check.r,install*.r,update.r} /usr/local/bin
     ## for now also from littler from GH
@@ -238,7 +180,6 @@ BootstrapLinuxOptions() {
     if [[ -n "$BOOTSTRAP_LATEX" ]]; then
         # We add a backports PPA for more recent TeX packages.
         # sudo add-apt-repository -y "ppa:texlive-backports/ppa"
-
         Retry sudo apt-get install -y --no-install-recommends \
             texlive-base texlive-latex-base \
             texlive-fonts-recommended texlive-fonts-extra \
@@ -246,11 +187,10 @@ BootstrapLinuxOptions() {
             texinfo lmodern
         # no longer exists: texlive-generic-recommended
     fi
-    if [[ -n "$BOOTSTRAP_PANDOC" ]]; then
-        InstallPandoc 'linux/debian/x86_64'
-    fi
     if [[ "${USE_BSPM}" != "FALSE" ]]; then
-        echo "bspm::enable()" | sudo tee --append /etc/R/Rprofile.site >/dev/null
+        sudo Rscript --vanilla -e 'install.packages("bspm", repos="https://cran.r-project.org")'
+        echo "suppressMessages(bspm::enable())" | sudo tee --append /etc/R/Rprofile.site >/dev/null
+        echo "options(bspm.sudo=TRUE)" | sudo tee --append /etc/R/Rprofile.site >/dev/null
     fi
 }
 
@@ -284,18 +224,11 @@ BootstrapMacOptions() {
         sudo tlmgr update --self
         sudo tlmgr install inconsolata upquote courier courier-scaled helvetic
     fi
-    if [[ -n "$BOOTSTRAP_PANDOC" ]]; then
-        InstallPandoc 'mac'
-    fi
 }
 
 EnsureDevtools() {
     ## deprecated 2020-Sep
     echo "Deprecated"
-    #if ! Rscript -e 'if (!("devtools" %in% rownames(installed.packages()))) q(status=1)' ; then
-    #    # Install devtools and testthat.
-    #    RBinaryInstall devtools testthat
-    #fi
 }
 
 EnsureUnittestRunner() {
@@ -385,16 +318,11 @@ RBinaryInstall() {
 
 InstallGithub() {
     #EnsureDevtools
-
-    #echo "Installing GitHub packages: $@"
-    # Install the package.
-    #Rscript -e 'library(devtools); library(methods); install_github(commandArgs(TRUE), build_vignettes = FALSE)' "$@"
     sudo Rscript -e 'remotes::install_github(commandArgs(TRUE))' "$@"
 }
 
 InstallDeps() {
     #EnsureDevtools
-    #Rscript -e 'library(devtools); library(methods); install_deps(dependencies = TRUE)'
     sudo Rscript -e 'remotes::install_deps(".")'
 }
 
@@ -405,8 +333,6 @@ InstallDepsAndSuggests() {
 InstallBiocDeps() {
     ## deprecated 2020-Sep
     echo "Deprecated"
-    #EnsureDevtools
-    #Rscript -e "${R_USE_BIOC_CMDS}"' library(devtools); install_deps(dependencies = TRUE)'
 }
 
 DumpSysinfo() {
@@ -466,12 +392,6 @@ RunTests() {
     fi
     _R_CHECK_CRAN_INCOMING_=${_R_CHECK_CRAN_INCOMING_} R CMD check "${FILE}" ${R_CHECK_ARGS} ${R_CHECK_INSTALL_ARGS}
 
-    # Check reverse dependencies
-    #if [[ -n "$R_CHECK_REVDEP" ]]; then
-    #    echo "Checking reverse dependencies"
-    #    Rscript -e 'library(devtools); checkOutput <- unlist(revdep_check(as.package(".")$package));if (!is.null(checkOutput)) {print(data.frame(pkg = names(checkOutput), error = checkOutput));for(i in seq_along(checkOutput)){;cat("\n", names(checkOutput)[i], " Check Output:\n  ", paste(readLines(regmatches(checkOutput[i], regexec("/.*\\.out", checkOutput[i]))[[1]]), collapse = "\n  ", sep = ""), "\n", sep = "")};q(status = 1, save = "no")}'
-    #fi
-
     if [[ -n "${WARNINGS_ARE_ERRORS}" ]]; then
         if DumpLogsByExtension "00check.log" | grep -q WARNING; then
             echo "Found warnings, treated as errors."
@@ -504,11 +424,6 @@ ShowHelpAndExit() {
 }
 
 COMMAND=$1
-#echo "\033[0;31m
-#r-travis is DEPRECATED!
-#Please see https://docs.travis-ci.com/user/languages/r/ for info, or
-#https://github.com/craigcitro/r-travis/wiki/Porting-to-native-R-support-in-Travis
-#for information on porting to native R support in Travis.\033[0m"
 #echo "Running command: ${COMMAND}"
 shift
 case $COMMAND in
