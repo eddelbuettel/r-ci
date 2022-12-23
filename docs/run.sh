@@ -188,9 +188,11 @@ BootstrapLinuxOptions() {
         # no longer exists: texlive-generic-recommended
     fi
     if [[ "${USE_BSPM}" != "FALSE" ]]; then
-        sudo Rscript --vanilla -e 'install.packages("bspm", repos="https://cran.r-project.org")'
+        #sudo Rscript --vanilla -e 'install.packages("bspm", repos="https://cran.r-project.org")'
+        ## for now to get 0.4.0.1 with type="binary-source"
+        sudo Rscript --vanilla -e 'remotes::install_github("Enchufa2/bspm")'
         echo "suppressMessages(bspm::enable())" | sudo tee --append /etc/R/Rprofile.site >/dev/null
-        echo "options(bspm.sudo=TRUE)" | sudo tee --append /etc/R/Rprofile.site >/dev/null
+        #echo "options(bspm.sudo=TRUE)" | sudo tee --append /etc/R/Rprofile.site >/dev/null
     fi
 }
 
@@ -232,13 +234,21 @@ EnsureDevtools() {
 }
 
 EnsureUnittestRunner() {
-    sudo Rscript -e 'dcf <- read.dcf(file="DESCRIPTION")[1,]; if ("Suggests" %in% names(dcf)) { sug <- dcf[["Suggests"]]; pkg <- do.call(c, sapply(c("testthat", "tinytest", "RUnit"), function(p, sug) if (grepl(p, sug)) p else NULL, sug, USE.NAMES=FALSE)); if (!is.null(pkg)) install.packages(pkg) }'
+    if [[ "Linux" == "${OS}" ]]; then
+        sudo Rscript -e 'dcf <- read.dcf(file="DESCRIPTION")[1,]; if ("Suggests" %in% names(dcf)) { sug <- dcf[["Suggests"]]; pkg <- do.call(c, sapply(c("testthat", "tinytest", "RUnit"), function(p, sug) if (grepl(p, sug)) p else NULL, sug, USE.NAMES=FALSE)); if (!is.null(pkg)) install.packages(pkg, type="binary-source") }'
+    else
+        sudo Rscript -e 'dcf <- read.dcf(file="DESCRIPTION")[1,]; if ("Suggests" %in% names(dcf)) { sug <- dcf[["Suggests"]]; pkg <- do.call(c, sapply(c("testthat", "tinytest", "RUnit"), function(p, sug) if (grepl(p, sug)) p else NULL, sug, USE.NAMES=FALSE)); if (!is.null(pkg)) install.packages(pkg) }'
+    fi
 }
 
 InstallIfNotYetInstalled() {
     res=$(Rscript -e 'if (requireNamespace(commandArgs(TRUE), quietly=TRUE)) cat("YES") else cat("NO")' "$1")
     if [[ "${res}" != "YES" ]]; then
-        sudo Rscript -e 'install.packages(commandArgs(TRUE))' "$1"
+        if [[ "Linux" == "${OS}" ]]; then
+            sudo Rscript -e 'install.packages(commandArgs(TRUE), type="binary-source")' "$1"
+        else
+            sudo Rscript -e 'install.packages(commandArgs(TRUE))' "$1"
+        fi
     fi
 }
 
@@ -284,7 +294,11 @@ RInstall() {
     fi
 
     echo "Installing R package(s): $@"
-    sudo Rscript -e 'install.packages(commandArgs(TRUE))' "$@"
+    if [[ "Linux" == "${OS}" ]]; then
+        sudo Rscript -e 'install.packages(commandArgs(TRUE), type="binary-source")' "$@"
+    else
+        sudo Rscript -e 'install.packages(commandArgs(TRUE))' "$@"
+    fi
 }
 
 BiocInstall() {
