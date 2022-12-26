@@ -190,7 +190,8 @@ BootstrapLinuxOptions() {
     if [[ "${USE_BSPM}" != "FALSE" ]]; then
         #sudo Rscript --vanilla -e 'install.packages("bspm", repos="https://cran.r-project.org")'
         ## for now to get 0.4.0.1 with type="binary-source"
-        sudo Rscript --vanilla -e 'remotes::install_github("Enchufa2/bspm")'
+        ## sudo Rscript --vanilla -e 'remotes::install_github("Enchufa2/bspm")'
+        curl -OLs https://eddelbuettel.github.io/r-ci/bspm_0.4.0.1.tar.gz && sudo R CMD INSTALL bspm_0.4.0.1.tar.gz
         echo "suppressMessages(bspm::enable())" | sudo tee --append /etc/R/Rprofile.site >/dev/null
         #echo "options(bspm.sudo=TRUE)" | sudo tee --append /etc/R/Rprofile.site >/dev/null
     fi
