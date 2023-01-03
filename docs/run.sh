@@ -114,7 +114,9 @@ BootstrapLinux() {
     wget -q -O- https://eddelbuettel.github.io/r2u/assets/dirk_eddelbuettel_key.asc | sudo tee -a /etc/apt/trusted.gpg.d/cranapt_key.asc
     echo "deb [arch=amd64] https://r2u.stat.illinois.edu/ubuntu $(lsb_release -cs) main" | sudo tee -a /etc/apt/sources.list.d/cranapt.list
     wget -q -O- https://cloud.r-project.org/bin/linux/ubuntu/marutter_pubkey.asc  | sudo tee -a /etc/apt/trusted.gpg.d/cran_ubuntu_key.asc
-    echo "deb [arch=amd64] https://cloud.r-project.org/bin/linux/ubuntu $(lsb_release -cs)-cran40/" | sudo tee -a /etc/apt/sources.list.d/cran_r.list
+    # next line not needed here as already in /etc/apt/sources.list so test and possibly skip
+    grep -q  "\(cloud\|cran\)\.r-project\.org" /etc/apt/sources.list || \
+        echo "deb [arch=amd64] https://cloud.r-project.org/bin/linux/ubuntu $(lsb_release -cs)-cran40/" | sudo tee -a /etc/apt/sources.list.d/cran_r.list
     echo "Package: *" | sudo tee -a /etc/apt/preferences.d/99cranapt
     echo "Pin: release o=CRAN-Apt Project" | sudo tee -a /etc/apt/preferences.d/99cranapt
     echo "Pin: release l=CRAN-Apt Packages" | sudo tee -a /etc/apt/preferences.d/99cranapt
@@ -137,7 +139,8 @@ BootstrapLinux() {
     # Add marutter's c2d4u repository.
     # R 4.0 (not needed as CRAN current) and c2d4u/4.0 variant as backup
     #sudo add-apt-repository -y "ppa:marutter/rrutter4.0"
-    sudo add-apt-repository -y "ppa:c2d4u.team/c2d4u4.0+"
+    # No longer need c2d4u when using r2u
+    #sudo add-apt-repository -y "ppa:c2d4u.team/c2d4u4.0+"
 
     ## Added PPAs, if given
     if [[ "${ADDED_PPAS}" != "" ]]; then
