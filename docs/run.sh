@@ -118,7 +118,7 @@ BootstrapLinux() {
     #grep -q  "\(cloud\|cran\)\.r-project\.org" /etc/apt/sources.list || \
     #    echo "deb [arch=amd64] https://cloud.r-project.org/bin/linux/ubuntu $(lsb_release -cs)-cran40/" | sudo tee -a /etc/apt/sources.list.d/cran_r.list
     echo "---before"
-    grep "\(cloud\|cran\)\.r-project\.org" /etc/apt/sources.list
+    cat /etc/apt/sources.list
     echo "---after"
     echo "Package: *" | sudo tee -a /etc/apt/preferences.d/99cranapt
     echo "Pin: release o=CRAN-Apt Project" | sudo tee -a /etc/apt/preferences.d/99cranapt
