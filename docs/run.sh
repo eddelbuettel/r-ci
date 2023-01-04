@@ -115,11 +115,7 @@ BootstrapLinux() {
     echo "deb [arch=amd64] https://r2u.stat.illinois.edu/ubuntu $(lsb_release -cs) main" | sudo tee -a /etc/apt/sources.list.d/cranapt.list
     wget -q -O- https://cloud.r-project.org/bin/linux/ubuntu/marutter_pubkey.asc  | sudo tee -a /etc/apt/trusted.gpg.d/cran_ubuntu_key.asc
     # next line not needed here as already in /etc/apt/sources.list so test and possibly skip
-    #grep -q  "\(cloud\|cran\)\.r-project\.org" /etc/apt/sources.list || \
-    #    echo "deb [arch=amd64] https://cloud.r-project.org/bin/linux/ubuntu $(lsb_release -cs)-cran40/" | sudo tee -a /etc/apt/sources.list.d/cran_r.list
-    echo "---before"
-    cat /etc/apt/sources.list
-    echo "---after"
+    # echo "deb [arch=amd64] https://cloud.r-project.org/bin/linux/ubuntu $(lsb_release -cs)-cran40/" | sudo tee -a /etc/apt/sources.list.d/cran_r.list
     echo "Package: *" | sudo tee -a /etc/apt/preferences.d/99cranapt
     echo "Pin: release o=CRAN-Apt Project" | sudo tee -a /etc/apt/preferences.d/99cranapt
     echo "Pin: release l=CRAN-Apt Packages" | sudo tee -a /etc/apt/preferences.d/99cranapt
