@@ -198,6 +198,7 @@ BootstrapLinuxOptions() {
         ## 2023-02-20 for now stick with 0.3.10
         ## sudo Rscript --vanilla -e 'remotes::install_url("https://cloud.r-project.org/src/contrib/Archive/bspm/bspm_0.3.10.tar.gz")'
         ## 2023-03-17 back bspm now at 0.5.1
+        echo "options(bspm.sudo = TRUE)" | sudo tee --append /etc/R/Rprofile.site >/dev/null
         echo "suppressMessages(bspm::enable())" | sudo tee --append /etc/R/Rprofile.site >/dev/null
         echo "options(bspm.version.check=FALSE)" | sudo tee --append /etc/R/Rprofile.site >/dev/null
         #echo "options(bspm.sudo=TRUE)" | sudo tee --append /etc/R/Rprofile.site >/dev/null
