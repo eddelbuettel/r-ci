@@ -58,15 +58,15 @@ Bootstrap() {
         exit 1
     fi
 
-    if ! (test -e .Rbuildignore && grep -q 'travis-tool' .Rbuildignore); then
-        echo '^travis-tool\.sh$' >>.Rbuildignore
-    fi
+    #if ! (test -e .Rbuildignore && grep -q 'travis-tool' .Rbuildignore); then
+    #    echo '^travis-tool\.sh$' >>.Rbuildignore
+    #fi
     if ! (test -e .Rbuildignore && grep -q 'run.sh' .Rbuildignore); then
         echo '^run\.sh$' >> .Rbuildignore
     fi
-    if ! (test -e .Rbuildignore && grep -q 'travis_wait' .Rbuildignore); then
-        echo '^travis_wait_.*\.log$' >> .Rbuildignore
-    fi
+    #if ! (test -e .Rbuildignore && grep -q 'travis_wait' .Rbuildignore); then
+    #    echo '^travis_wait_.*\.log$' >> .Rbuildignore
+    #fi
 
     # Make sure unit test package (among testthat, tinytest, RUnit) installed
     EnsureUnittestRunner
@@ -243,10 +243,12 @@ EnsureDevtools() {
 }
 
 EnsureUnittestRunner() {
-    if [[ "Linux" == "${OS}" ]]; then
-        sudo Rscript -e 'dcf <- read.dcf(file="DESCRIPTION")[1,]; if ("Suggests" %in% names(dcf)) { sug <- dcf[["Suggests"]]; pkg <- do.call(c, sapply(c("testthat", "tinytest", "RUnit"), function(p, sug) if (grepl(p, sug)) p else NULL, sug, USE.NAMES=FALSE)); if (!is.null(pkg)) install.packages(pkg, type="binary-source") }'
-    else
-        sudo Rscript -e 'dcf <- read.dcf(file="DESCRIPTION")[1,]; if ("Suggests" %in% names(dcf)) { sug <- dcf[["Suggests"]]; pkg <- do.call(c, sapply(c("testthat", "tinytest", "RUnit"), function(p, sug) if (grepl(p, sug)) p else NULL, sug, USE.NAMES=FALSE)); if (!is.null(pkg)) install.packages(pkg) }'
+    if test -f DESCRIPTION; then
+        if [[ "Linux" == "${OS}" ]]; then
+            sudo Rscript -e 'dcf <- read.dcf(file="DESCRIPTION")[1,]; if ("Suggests" %in% names(dcf)) { sug <- dcf[["Suggests"]]; pkg <- do.call(c, sapply(c("testthat", "tinytest", "RUnit"), function(p, sug) if (grepl(p, sug)) p else NULL, sug, USE.NAMES=FALSE)); if (!is.null(pkg)) install.packages(pkg, type="binary-source") }'
+        else
+            sudo Rscript -e 'dcf <- read.dcf(file="DESCRIPTION")[1,]; if ("Suggests" %in% names(dcf)) { sug <- dcf[["Suggests"]]; pkg <- do.call(c, sapply(c("testthat", "tinytest", "RUnit"), function(p, sug) if (grepl(p, sug)) p else NULL, sug, USE.NAMES=FALSE)); if (!is.null(pkg)) install.packages(pkg) }'
+        fi
     fi
 }
 
