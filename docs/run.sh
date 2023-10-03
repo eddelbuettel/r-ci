@@ -393,6 +393,11 @@ Coverage() {
     Rscript -e "covr::codecov(type = '${COVERAGE_TYPE}', quiet = FALSE)"
 }
 
+UpdatePackages() {
+    echo "Updating Packages"
+    Rscript -e 'update.packages(ask=FALSE)'
+}
+
 RunTests() {
     echo "Building with: R CMD build ${R_BUILD_ARGS}"
     R CMD build ${R_BUILD_ARGS} .
@@ -457,6 +462,7 @@ case $COMMAND in
         ;;
     ##
     ## Ensure devtools is loaded (implicitly called)
+    ## (Deprecated Sep 2020)
     "install_devtools"|"devtools_install")
         EnsureDevtools
         ;;
@@ -502,9 +508,16 @@ case $COMMAND in
         ;;
     ##
     ## Install package dependencies from Bioconductor and CRAN (needs devtools)
+    ## deprecated 2020-Sep
     "install_bioc_deps")
         InstallBiocDeps
         ;;
+    ##
+    ## Update packages
+    "update_packages")
+        UpdatePackages
+        ;;
+    ##
     ##
     ## Run the actual tests, ie R CMD check
     "run_tests")
