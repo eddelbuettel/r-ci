@@ -13,7 +13,7 @@ ARCH=$(uname -m)
 
 # Default CRAN repo (use the CDN) and R verssion
 CRAN=${CRAN:-"https://cloud.r-project.org"}
-RVER=${RVER:-"4.3.1"}
+RVER=${RVER:-"4.3.2"}
 
 ## Optional drat repos, unset by default
 DRAT_REPOS=${DRAT_REPOS:-""}
@@ -29,6 +29,9 @@ TRIM_APT_SOURCES=${TRIM_APT_SOURCES:-"TRUE"}
 
 ## Optional setting of type argument in covr::coverage() call below, defaults to "tests"
 COVERAGE_TYPE=${COVERAGE_TYPE:-"tests"}
+
+## Let's see if the new runners with four virtual CPUs can be taken advantage of
+MAKEFLAGS=${MAKEFLAGS:-"-j 4"}
 
 R_BUILD_ARGS=${R_BUILD_ARGS-"--no-build-vignettes --no-manual"}
 R_CHECK_ARGS=${R_CHECK_ARGS-"--no-vignettes --no-manual --as-cran"}
