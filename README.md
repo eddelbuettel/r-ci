@@ -54,8 +54,10 @@ versions (as used by
 
 We also use the same approach of downloading `run.sh` and invoking it for the different steps in
 with GitHub Actions (_e.g._ for
-[tidyCpp](https://github.com/eddelbuettel/tidycpp/blob/master/.github/workflows/R-CMD-check.yaml)). Similarly,
-Azure Pipelines can be used (as was done by a test repo on Azure).
+[tidyCpp](https://github.com/eddelbuettel/tidycpp/blob/master/.github/workflows/R-CMD-check.yaml)). There
+is also an [Action for
+GitHub](https://github.com/eddelbuettel/github-actions/tree/master/r-ci-setup) to download `run.sh`
+and set it up. Similarly, Azure Pipelines can be used (as was done by a test repo on Azure).
 
 There are also other options of use with PPAs and more---for fullest details see the source of the
 shell script `run.sh`.
