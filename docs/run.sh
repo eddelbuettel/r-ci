@@ -33,6 +33,9 @@ COVERAGE_TYPE=${COVERAGE_TYPE:-"tests"}
 ## Let's see if the new runners with four virtual CPUs can be taken advantage of
 MAKEFLAGS=${MAKEFLAGS:-"-j 4"}
 
+## Install Fortran on macOS as well
+BOOTSTRAP_MACOS_FORTRAN=${BOOTSTRAP_MACOS_FORTRAN:-"TRUE"}
+
 R_BUILD_ARGS=${R_BUILD_ARGS-"--no-build-vignettes --no-manual"}
 R_CHECK_ARGS=${R_CHECK_ARGS-"--no-vignettes --no-manual --as-cran"}
 R_CHECK_INSTALL_ARGS=${R_CHECK_INSTALL_ARGS-"--install-args=--install-tests"}
@@ -224,7 +227,7 @@ BootstrapMacOptions() {
     if [[ -n "$BOOTSTRAP_LATEX" ]]; then
         # TODO: Install MacTeX.pkg once there's enough disk space
         MACTEX=BasicTeX.pkg
-        wget http://ctan.math.utah.edu/ctan/tex-archive/systems/mac/mactex/$MACTEX -O "/tmp/$MACTEX"
+        wget -q http://ctan.math.utah.edu/ctan/tex-archive/systems/mac/mactex/$MACTEX -O "/tmp/$MACTEX"
 
         echo "Installing OS X binary package for MacTeX"
         sudo installer -pkg "/tmp/$MACTEX" -target /
@@ -234,6 +237,13 @@ BootstrapMacOptions() {
         #   https://stat.ethz.ch/pipermail/r-sig-mac/2010-May/007399.html
         sudo tlmgr update --self
         sudo tlmgr install inconsolata upquote courier courier-scaled helvetic
+    fi
+
+    if [[ "$BOOTSTRAP_MACOS_FORTRAN" == "TRUE" ]]; then
+        wget -q https://mac.r-project.org/tools/gfortran-12.2-universal.pkg -O /tmp/gfortran.pkg
+        echo "Installing macOS Fortran binary package for R on ${ARCH}"
+        sudo installer -pkg "/tmp/gfortran.pkg" -target /
+        rm "/tmp/gfortran.pkg"
     fi
 }
 
