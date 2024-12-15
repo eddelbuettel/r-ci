@@ -22,14 +22,16 @@
   </header>
   <p class="major">
   This repository provides a script <code>run.sh</code> for portable, flexible and lightweight Continuous Integration (CI) use at 
-  GitHub Actions, Travis, Azure Pipelines and Docker for local testing and use -- all shown below via real examples -- and likely others such as GitLab.
+  GitHub Actions, Travis, Azure Pipelines, as well as Docker for local testing and use -- all shown below via real examples -- and likely others such as GitLab.
   </p>
   <p class="major">
   This script contains the following key functions which are typically all a user needs to call:
   </p>
   <dl>
     <dt><code>./run.sh bootstrap</code></dt>
-    <dd><p>Sets up the R environment, installs auxiliary packages such as <code>testthat</code> or <code>tinytest</code>.</p></dd>
+    <dd><p>Sets up the R environment, installs auxiliary packages such as
+      <code>testthat</code> or <code>tinytest</code>. (Note that this step
+      is included if you use the <a href="https://github.com/eddelbuettel/github-actions/tree/master/r-ci"><code>r-ci</code></a> GitHub Action shown in the next example.)</p></dd>
 
     <dt><code>./run.sh install_deps</code></dt>
     <dd><p>Parses <code>DESCRIPTION</code> and installs the required packages. <code>install_all</code> is a (slightly heavier) alternative pulling not only dependencies but also suggested packages.</p></dd>
@@ -55,12 +57,13 @@
   ending in <code>.yml</code> or <code>.yaml</code> in a directory <code>.github/workflows</code> within your GitHub
   repo---and you are all set. No additional registration is needed.
   <p>
-  Below is an example <code>.github/workflows/ci.yaml</code> from the
+  Below is an (adapted) example <code>.github/workflows/ci.yaml</code> from the
   <a href="https://github.com/eddelbuettel/dang">dang</a> repository running a simple matrix build over Linux and macOS. Note that the matrix build for either
   can be turned off by placing a simple comment <code>#</code> character in
   front as can be seen in many example YAML files. Also note that this
-  version now uses a small <a href="https://github.com/eddelbuettel/github-actions/tree/master/r-ci-setup">GitHub Action for r-ci-setup</a>
-  instead of the standard <code>curl</code> use shown in the other examples.
+  version now use the <a href="https://github.com/eddelbuettel/github-actions/tree/master/r-ci">GitHub Action for r-ci</a>
+  (instead of the standard <code>curl</code> use shown in the other examples)
+  which also includes the <code>bootstrap</code> step.
   
 <pre><code>
 # Run CI for R using https://eddelbuettel.github.io/r-ci/
@@ -89,10 +92,7 @@ jobs:
         uses: actions/checkout@v4
 
       - name: Setup
-        uses: eddelbuettel/github-actions/r-ci-setup@master
-
-      - name: Bootstrap
-        run: ./run.sh bootstrap
+        uses: eddelbuettel/github-actions/r-ci@master
 
       - name: Dependencies
         run: ./run.sh install_all
