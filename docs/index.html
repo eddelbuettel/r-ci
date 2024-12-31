@@ -64,6 +64,9 @@
   version now use the <a href="https://github.com/eddelbuettel/github-actions/tree/master/r-ci">GitHub Action for r-ci</a>
   (instead of the standard <code>curl</code> use shown in the other examples)
   which also includes the <code>bootstrap</code> step.
+  Lastly, one can uncomment the dumping of logs in case of failures, and
+  enable coverage as some of my repos do.
+  For convenience this <code>ci.yaml</code> can also <a href="r-ci.yaml">be downloaded</a>.
   
 <pre><code>
 # Run CI for R using https://eddelbuettel.github.io/r-ci/
@@ -99,6 +102,14 @@ jobs:
 
       - name: Test
         run: ./run.sh run_tests
+
+      #- name: Logs
+      #  run: ./run.sh dump_logs
+      #  if: failure()
+        
+      #- name: Coverage
+      #  if: ${{ matrix.os == 'ubuntu-latest' }}
+      #  run: ./run.sh coverage
 
 </code></pre>
   
