@@ -65,7 +65,8 @@
   (instead of the standard <code>curl</code> use shown in the other examples)
   which also includes the <code>bootstrap</code> step.
   Lastly, one can uncomment the dumping of logs in case of failures, and
-  enable coverage as some of my repos do.
+  enable coverage as some of my repos do. (Note that you need to set a
+  repository secret under the name `CODECOV_TOKEN` with the supplied token string.)
   For convenience this <code>ci.yaml</code> can also <a href="r-ci.yaml">be downloaded</a>.
   
 <pre><code>
@@ -110,6 +111,8 @@ jobs:
       #- name: Coverage
       #  if: ${{ matrix.os == 'ubuntu-latest' }}
       #  run: ./run.sh coverage
+      #  env:
+      #    CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}
 
 </code></pre>
   
