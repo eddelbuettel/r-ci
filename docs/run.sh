@@ -240,7 +240,7 @@ BootstrapMacOptions() {
     fi
 
     if [[ "$BOOTSTRAP_MACOS_FORTRAN" == "TRUE" ]]; then
-        wget -q https://mac.r-project.org/tools/gfortran-12.2-universal.pkg -O /tmp/gfortran.pkg
+        wget -q https://mac.r-project.org/tools/gfortran-14.2-universal.pkg -O /tmp/gfortran.pkg
         echo "Installing macOS Fortran binary package for R on ${ARCH}"
         sudo installer -pkg "/tmp/gfortran.pkg" -target /
         rm "/tmp/gfortran.pkg"
