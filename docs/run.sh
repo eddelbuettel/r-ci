@@ -98,7 +98,7 @@ BootstrapLinux() {
     ## Check for sudo_release and install if needed
     test -x /usr/bin/sudo || apt-get install -y --no-install-recommends sudo
     ## Hotfix for key issue
-    echo 'Acquire::AllowInsecureRepositories "true";' | sudo tee /etc/apt/apt.conf.d/90local-secure >/dev/null
+    echo 'Acquire::AllowInsecureRepositories "true";' | sudo tee /etc/apt/apt.conf.d/90local-secure > /dev/null
 
     ## Check for lsb_release and install if needed
     test -x /usr/bin/lsb_release || sudo apt-get install -y --no-install-recommends lsb-release
@@ -115,14 +115,14 @@ BootstrapLinux() {
 
     ## from r2u setup script
     sudo apt update -qq && sudo apt install --yes --no-install-recommends wget ca-certificates dirmngr gnupg gpg-agent
-    wget -q -O- https://eddelbuettel.github.io/r2u/assets/dirk_eddelbuettel_key.asc | sudo tee -a /etc/apt/trusted.gpg.d/cranapt_key.asc
-    echo "deb [arch=amd64] https://r2u.stat.illinois.edu/ubuntu $(lsb_release -cs) main" | sudo tee -a /etc/apt/sources.list.d/cranapt.list
-    wget -q -O- https://cloud.r-project.org/bin/linux/ubuntu/marutter_pubkey.asc  | sudo tee -a /etc/apt/trusted.gpg.d/cran_ubuntu_key.asc
-    echo "deb [arch=amd64] https://cloud.r-project.org/bin/linux/ubuntu $(lsb_release -cs)-cran40/" | sudo tee -a /etc/apt/sources.list.d/cran_r.list
-    echo "Package: *" | sudo tee -a /etc/apt/preferences.d/99cranapt
-    echo "Pin: release o=CRAN-Apt Project" | sudo tee -a /etc/apt/preferences.d/99cranapt
-    echo "Pin: release l=CRAN-Apt Packages" | sudo tee -a /etc/apt/preferences.d/99cranapt
-    echo "Pin-Priority: 700" | sudo tee -a /etc/apt/preferences.d/99cranapt
+    wget -q -O- https://eddelbuettel.github.io/r2u/assets/dirk_eddelbuettel_key.asc | sudo tee -a /etc/apt/trusted.gpg.d/cranapt_key.asc > /dev/null
+    echo "deb [arch=amd64] https://r2u.stat.illinois.edu/ubuntu $(lsb_release -cs) main" | sudo tee -a /etc/apt/sources.list.d/cranapt.list > /dev/null
+    wget -q -O- https://cloud.r-project.org/bin/linux/ubuntu/marutter_pubkey.asc  | sudo tee -a /etc/apt/trusted.gpg.d/cran_ubuntu_key.asc > /dev/null
+    echo "deb [arch=amd64] https://cloud.r-project.org/bin/linux/ubuntu $(lsb_release -cs)-cran40/" | sudo tee -a /etc/apt/sources.list.d/cran_r.list > /dev/null
+    echo "Package: *" | sudo tee -a /etc/apt/preferences.d/99cranapt > /dev/null
+    echo "Pin: release o=CRAN-Apt Project" | sudo tee -a /etc/apt/preferences.d/99cranapt > /dev/null
+    echo "Pin: release l=CRAN-Apt Packages" | sudo tee -a /etc/apt/preferences.d/99cranapt > /dev/null
+    echo "Pin-Priority: 700" | sudo tee -a /etc/apt/preferences.d/99cranapt > /dev/null
 
 
     ## Set up our CRAN mirror.
@@ -133,9 +133,9 @@ BootstrapLinux() {
     #fi
     ## Add the repo
     ## need pinning to ensure repo sorts higher, note we also pin r2u
-    #echo "Package: *" | sudo tee /etc/apt/preferences.d/c2d4u-pin >/dev/null
-    #echo "Pin: release o=LP-PPA-c2d4u.team-c2d4u4.0+" | sudo tee -a /etc/apt/preferences.d/c2d4u-pin >/dev/null
-    #echo "Pin-Priority: 600" | sudo tee -a /etc/apt/preferences.d/c2d4u-pin >/dev/null
+    #echo "Package: *" | sudo tee /etc/apt/preferences.d/c2d4u-pin > /dev/null
+    #echo "Pin: release o=LP-PPA-c2d4u.team-c2d4u4.0+" | sudo tee -a /etc/apt/preferences.d/c2d4u-pin > /dev/null
+    #echo "Pin-Priority: 600" | sudo tee -a /etc/apt/preferences.d/c2d4u-pin > /dev/null
     ## now add repo (and update index)
     #sudo add-apt-repository -y "deb ${CRAN}/bin/linux/ubuntu $(lsb_release -cs)-cran40/"
 
@@ -171,7 +171,7 @@ BootstrapLinux() {
     #sudo cp -ax /usr/local/lib/R/site-library/littler/examples/{check.r,install*.r} /usr/local/bin
 
     # Default to no recommends
-    echo 'APT::Install-Recommends "false";' | sudo tee /etc/apt/apt.conf.d/90local-no-recommends >/dev/null
+    echo 'APT::Install-Recommends "false";' | sudo tee /etc/apt/apt.conf.d/90local-no-recommends > /dev/null
 
     # Change permissions for /usr/local/lib/R/site-library
     # This should really be via 'staff adduser travis staff'
@@ -201,10 +201,10 @@ BootstrapLinuxOptions() {
         ## 2023-02-20 for now stick with 0.3.10
         ## sudo Rscript --vanilla -e 'remotes::install_url("https://cloud.r-project.org/src/contrib/Archive/bspm/bspm_0.3.10.tar.gz")'
         ## 2023-03-17 back bspm now at 0.5.1
-        echo "options(bspm.sudo = TRUE)" | sudo tee --append /etc/R/Rprofile.site >/dev/null
-        echo "suppressMessages(bspm::enable())" | sudo tee --append /etc/R/Rprofile.site >/dev/null
-        echo "options(bspm.version.check=FALSE)" | sudo tee --append /etc/R/Rprofile.site >/dev/null
-        #echo "options(bspm.sudo=TRUE)" | sudo tee --append /etc/R/Rprofile.site >/dev/null
+        echo "options(bspm.sudo = TRUE)" | sudo tee --append /etc/R/Rprofile.site > /dev/null
+        echo "suppressMessages(bspm::enable())" | sudo tee --append /etc/R/Rprofile.site > /dev/null
+        echo "options(bspm.version.check=FALSE)" | sudo tee --append /etc/R/Rprofile.site > /dev/null
+        #echo "options(bspm.sudo=TRUE)" | sudo tee --append /etc/R/Rprofile.site > /dev/null
     fi
 }
 
