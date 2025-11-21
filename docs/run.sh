@@ -13,7 +13,7 @@ ARCH=$(uname -m)
 
 # Default CRAN repo (use the CDN) and R verssion
 CRAN=${CRAN:-"https://cloud.r-project.org"}
-RVER=${RVER:-"4.5.1"}
+RVER=${RVER:-"4.5.2"}
 
 ## Optional drat repos, unset by default
 DRAT_REPOS=${DRAT_REPOS:-""}
