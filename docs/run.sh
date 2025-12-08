@@ -55,7 +55,10 @@ Bootstrap() {
     if [[ "Darwin" == "${OS}" ]]; then
         BootstrapMac
     elif [[ "Linux" == "${OS}" ]]; then
-        BootstrapLinux
+        ## This tests explicitly for a stamp, the r2u4ci container
+        if ! (test -f /etc/r2u_ci); then
+            BootstrapLinux
+        fi
     else
         echo "Unknown OS: ${OS}"
         exit 1
@@ -66,10 +69,14 @@ Bootstrap() {
     #fi
     if ! (test -e .Rbuildignore && grep -q 'run.sh' .Rbuildignore); then
         echo '^run\.sh$' >> .Rbuildignore
+        echo '^\.devcontainer' >> .Rbuildignore
     fi
     #if ! (test -e .Rbuildignore && grep -q 'travis_wait' .Rbuildignore); then
     #    echo '^travis_wait_.*\.log$' >> .Rbuildignore
     #fi
+
+    # Default packages
+    sudo Rscript -e 'if (!requireNamespace("remotes", quietly=TRUE)) install.packages("remotes")'
 
     # Make sure unit test package (among testthat, tinytest, RUnit) installed
     EnsureUnittestRunner
@@ -95,16 +102,17 @@ InstallPandoc() {
 }
 
 BootstrapLinux() {
-    ## Check for sudo_release and install if needed
-    test -x /usr/bin/sudo || apt-get install -y --no-install-recommends sudo
-    ## Hotfix for key issue
-    echo 'Acquire::AllowInsecureRepositories "true";' | sudo tee /etc/apt/apt.conf.d/90local-secure > /dev/null
+    ## Check for sudo and install if needed:
+    ## - normal actions runs as runner (needs it)
+    ## - container runs as root and needs it _because all th expressions below have it_
+    ##   (we could, one presumes, add an 'empty' shell script named 'sudo' that runs '$@'...)
+    if ! (test -x /usr/bin/sudo); then
+        apt update --quiet --quiet --quiet > /dev/null
+        apt install --quiet --quiet --quiet --yes --no-install-recommends sudo > /dev/null
+    fi
 
     ## Check for lsb_release and install if needed
-    test -x /usr/bin/lsb_release || sudo apt-get install -y --no-install-recommends lsb-release
-    ## Check for add-apt-repository and install if needed, using a fudge around the (manual) tz config dialog
-    test -x /usr/bin/add-apt-repository || \
-        (echo 12 > /tmp/input.txt; echo 5 >> /tmp/input.txt; sudo apt-get install -y tzdata < /tmp/input.txt; sudo apt-get install -y --no-install-recommends software-properties-common)
+    test -x /usr/bin/lsb_release || sudo apt install --quiet --quiet --quiet --yes --no-install-recommends lsb-release
 
     ShowBanner
 
@@ -114,16 +122,25 @@ BootstrapLinux() {
     fi
 
     ## from r2u setup script
-    sudo apt update -qq && sudo apt install --yes --no-install-recommends wget ca-certificates dirmngr gnupg gpg-agent
-    wget -q -O- https://eddelbuettel.github.io/r2u/assets/dirk_eddelbuettel_key.asc | sudo tee -a /etc/apt/trusted.gpg.d/cranapt_key.asc > /dev/null
-    echo "deb [arch=amd64] https://r2u.stat.illinois.edu/ubuntu $(lsb_release -cs) main" | sudo tee -a /etc/apt/sources.list.d/cranapt.list > /dev/null
-    wget -q -O- https://cloud.r-project.org/bin/linux/ubuntu/marutter_pubkey.asc  | sudo tee -a /etc/apt/trusted.gpg.d/cran_ubuntu_key.asc > /dev/null
-    echo "deb [arch=amd64] https://cloud.r-project.org/bin/linux/ubuntu $(lsb_release -cs)-cran40/" | sudo tee -a /etc/apt/sources.list.d/cran_r.list > /dev/null
-    echo "Package: *" | sudo tee -a /etc/apt/preferences.d/99cranapt > /dev/null
-    echo "Pin: release o=CRAN-Apt Project" | sudo tee -a /etc/apt/preferences.d/99cranapt > /dev/null
-    echo "Pin: release l=CRAN-Apt Packages" | sudo tee -a /etc/apt/preferences.d/99cranapt > /dev/null
-    echo "Pin-Priority: 700" | sudo tee -a /etc/apt/preferences.d/99cranapt > /dev/null
+    if ! (test -f /etc/apt/sources.list.d/r2u.sources); then
+        ## Hotfix for key issue
+        echo 'Acquire::AllowInsecureRepositories "true";' | sudo tee /etc/apt/apt.conf.d/90local-secure > /dev/null
+        sudo apt update --quiet --quiet
 
+        #sudo apt update -qq && sudo apt install --quiet --quiet --quiet --yes --no-install-recommends wget ca-certificates dirmngr gnupg gpg-agent
+        wget -q -O- https://eddelbuettel.github.io/r2u/assets/dirk_eddelbuettel_key.asc | sudo tee -a /etc/apt/trusted.gpg.d/cranapt_key.asc > /dev/null
+        echo "deb [arch=amd64] https://r2u.stat.illinois.edu/ubuntu $(lsb_release -cs) main" | sudo tee -a /etc/apt/sources.list.d/cranapt.list > /dev/null
+        wget -q -O- https://cloud.r-project.org/bin/linux/ubuntu/marutter_pubkey.asc | sudo tee -a /etc/apt/trusted.gpg.d/cran_ubuntu_key.asc > /dev/null
+        echo "deb [arch=amd64] https://cloud.r-project.org/bin/linux/ubuntu $(lsb_release -cs)-cran40/" | sudo tee -a /etc/apt/sources.list.d/cran_r.list > /dev/null
+    fi
+    if ! (test -f /etc/apt/preferences.d/99r2u); then
+        cat <<EOF | sudo tee -a /etc/apt/preferences.d/99cranapt > /dev/null
+Package: *
+Pin: release o=CRAN-Apt Project
+Pin: release l=CRAN-Apt Packages
+Pin-Priority: 700
+EOF
+    fi
 
     ## Set up our CRAN mirror.
     # No longer need c2d4u when using r2u
@@ -147,36 +164,45 @@ BootstrapLinux() {
 
     ## Added PPAs, if given
     if [[ "${ADDED_PPAS}" != "" ]]; then
+        ## Check for add-apt-repository and install if needed, using a fudge around the (manual) tz config dialog
+        test -x /usr/bin/add-apt-repository || \
+                (echo 12 > /tmp/input.txt; echo 5 >> /tmp/input.txt; sudo apt install --quiet --yes tzdata < /tmp/input.txt; sudo apt install --quiet --yes --no-install-recommends software-properties-common)
         for ppa in "${ADDED_PPAS}"; do
             sudo add-apt-repository -y "${ppa}"
         done
+
+        # Update after adding all repositories.  Retry several times to work around
+        # flaky connection to Launchpad PPAs.
+        Retry sudo apt update --quiet --quiet
     fi
-
-
-    # Update after adding all repositories.  Retry several times to work around
-    # flaky connection to Launchpad PPAs.
-    Retry sudo apt-get update -qq
 
     # Install an R development environment. qpdf is also needed for
     # --as-cran checks:
     #   https://stat.ethz.ch/pipermail/r-help//2012-September/335676.html
     # May 2020: we also need devscripts for checkbashism
     # Sep 2020: add bspm and remotes
-    Retry sudo apt-get install -y --no-install-recommends r-base-dev r-recommended qpdf devscripts r-cran-bspm r-cran-remotes
+    if ! (test -f /usr/bin/R); then
+        Retry sudo apt install --quiet --quiet --quiet --yes --no-install-recommends r-base-dev r-recommended > /dev/null
 
-    #sudo cp -ax /usr/lib/R/site-library/littler/examples/{build.r,check.r,install*.r,update.r} /usr/local/bin
-    ## for now also from littler from GH
-    #sudo install.r remotes
-    #sudo installGithub.r eddelbuettel/littler
-    #sudo cp -ax /usr/local/lib/R/site-library/littler/examples/{check.r,install*.r} /usr/local/bin
+        #sudo cp -ax /usr/lib/R/site-library/littler/examples/{build.r,check.r,install*.r,update.r} /usr/local/bin
+        ## for now also from littler from GH
+        #sudo install.r remotes
+        #sudo installGithub.r eddelbuettel/littler
+        #sudo cp -ax /usr/local/lib/R/site-library/littler/examples/{check.r,install*.r} /usr/local/bin
 
-    # Default to no recommends
-    echo 'APT::Install-Recommends "false";' | sudo tee /etc/apt/apt.conf.d/90local-no-recommends > /dev/null
+        # Default to no recommends
+        echo 'APT::Install-Recommends "false";' | sudo tee /etc/apt/apt.conf.d/90local-no-recommends > /dev/null
 
-    # Change permissions for /usr/local/lib/R/site-library
-    # This should really be via 'staff adduser travis staff'
-    # but that may affect only the next shell
-    sudo chmod 2777 /usr/local/lib/R /usr/local/lib/R/site-library
+        # Change permissions for /usr/local/lib/R/site-library
+        # This should really be via 'staff adduser travis staff'
+        # but that may affect only the next shell
+        sudo chmod 2777 /usr/local/lib/R /usr/local/lib/R/site-library
+    fi
+
+    if ! (test -f /usr/bin/qpdf); then
+        Retry sudo apt update --quiet --quiet --quiet > /dev/null
+        Retry sudo apt install --quiet --quiet --quiet --yes --no-install-recommends qpdf devscripts r-cran-bspm > /dev/null
+    fi
 
     # Process options
     BootstrapLinuxOptions
@@ -216,11 +242,11 @@ BootstrapMac() {
     sudo installer -pkg "/tmp/R-latest.pkg" -target /
     rm "/tmp/R-latest.pkg"
 
+    # qpdf
+    brew install qpdf
+
     # Process options
     BootstrapMacOptions
-
-    # Default packages
-    sudo Rscript -e 'install.packages(c("remotes"))'
 }
 
 BootstrapMacOptions() {
@@ -255,7 +281,7 @@ EnsureDevtools() {
 EnsureUnittestRunner() {
     if test -f DESCRIPTION; then
         if [[ "Linux" == "${OS}" ]]; then
-            sudo Rscript -e 'dcf <- read.dcf(file="DESCRIPTION")[1,]; if ("Suggests" %in% names(dcf)) { sug <- dcf[["Suggests"]]; pkg <- do.call(c, sapply(c("testthat", "tinytest", "RUnit"), function(p, sug) if (grepl(p, sug)) p else NULL, sug, USE.NAMES=FALSE)); if (!is.null(pkg)) install.packages(pkg, type="binary-source") }'
+            sudo Rscript -e 'dcf <- read.dcf(file="DESCRIPTION")[1,]; if ("Suggests" %in% names(dcf)) { sug <- dcf[["Suggests"]]; pkg <- do.call(c, sapply(c("testthat", "tinytest", "RUnit"), function(p, sug) if (grepl(p, sug)) p else NULL, sug, USE.NAMES=FALSE)); if (!is.null(pkg)) install.packages(pkg, type="binary-source") }' > /dev/null
         else
             sudo Rscript -e 'dcf <- read.dcf(file="DESCRIPTION")[1,]; if ("Suggests" %in% names(dcf)) { sug <- dcf[["Suggests"]]; pkg <- do.call(c, sapply(c("testthat", "tinytest", "RUnit"), function(p, sug) if (grepl(p, sug)) p else NULL, sug, USE.NAMES=FALSE)); if (!is.null(pkg)) install.packages(pkg) }'
         fi
@@ -285,7 +311,7 @@ AptGetInstall() {
     fi
 
     echo "Installing apt package(s) $@"
-    Retry sudo apt-get -y --no-install-recommends --allow-unauthenticated install "$@"
+    Retry sudo apt --yes --no-install-recommends --allow-unauthenticated install "$@"
 }
 
 DpkgCurlInstall() {
