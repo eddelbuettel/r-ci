@@ -441,9 +441,26 @@ UpdatePackages() {
     Rscript -e 'update.packages(ask=FALSE)'
 }
 
+getR() {
+
+    if [ ! -f /.dockerenv ]; then
+        ## no container, just use R
+        echo "R"
+    elif [ -f /usr/local/bin/Rdevel ]; then
+        ## in drd use Rdevel
+        echo "Rdevel"
+    else
+        ## fallback
+        echo "R"
+    fi
+}
+
 RunTests() {
-    echo "Building with: R CMD build ${R_BUILD_ARGS}"
-    R CMD build ${R_BUILD_ARGS} .
+    # Respect R-devel if it is in the container
+    R=$(getR)
+
+    echo "Building with: ${R} CMD build ${R_BUILD_ARGS}"
+    ${R} CMD build ${R_BUILD_ARGS} .
     # We want to grab the version we just built.
     FILE=$(ls -1t *.tar.gz | head -n 1)
 
@@ -452,12 +469,12 @@ RunTests() {
         R_CHECK_INSTALL_ARGS=${R_CHECK_INSTALL_ARGS-"--install-args=\"--build --install-tests\""}
     fi
 
-    echo "Testing with: R CMD check \"${FILE}\" ${R_CHECK_ARGS} ${R_CHECK_INSTALL_ARGS}"
+    echo "Testing with: ${R} CMD check \"${FILE}\" ${R_CHECK_ARGS} ${R_CHECK_INSTALL_ARGS}"
     _R_CHECK_CRAN_INCOMING_=${_R_CHECK_CRAN_INCOMING_:-FALSE}
     if [[ "$_R_CHECK_CRAN_INCOMING_" == "FALSE" ]]; then
         echo "(CRAN incoming checks are off)"
     fi
-    _R_CHECK_CRAN_INCOMING_=${_R_CHECK_CRAN_INCOMING_} R CMD check "${FILE}" ${R_CHECK_ARGS} ${R_CHECK_INSTALL_ARGS}
+    _R_CHECK_CRAN_INCOMING_=${_R_CHECK_CRAN_INCOMING_} ${R} CMD check "${FILE}" ${R_CHECK_ARGS} ${R_CHECK_INSTALL_ARGS}
 
     if [[ -n "${WARNINGS_ARE_ERRORS}" ]]; then
         if DumpLogsByExtension "00check.log" | grep -q WARNING; then
