@@ -22,7 +22,7 @@
   </header>
   <p class="major">
   This repository provides a script <code>run.sh</code> for portable, flexible and lightweight Continuous Integration (CI) use at 
-  GitHub Actions, Travis, Azure Pipelines, as well as Docker for local testing and use -- all shown below via real examples -- and likely others such as GitLab.
+  GitHub Actions, Travis, Azure Pipelines, CircleCI as well as Docker for local testing and use -- all shown below via real examples -- and likely others such as GitLab.
   </p>
   <p class="major">
   This script contains the following key functions which are typically all a user needs to call:
@@ -247,8 +247,61 @@ steps:
 </div>
 </section>
 
-
 <!-- Five -->
+<section class="spotlight style1 orient-right content-align-left image-position-center onscroll-image-fade-in">
+<div class="content">
+  <h3>Use with CircleCI</h3>
+
+  <p>CircleCI offers another alternative with a very polish browser interface and generous credits.
+  The example below is again derived from the <a href="https://github.com/eddelbuettel/dang">dang</a> repository.
+  It uses the r2u4ci container, fetches `run.sh` and uses it.
+  The file has to be stored as `.circleci/config.yaml` in a repository registered at CircleCI.  
+  </p>
+
+<pre><code>
+version: 2.1
+
+jobs:
+  ci:
+    docker:
+      - image: rocker/r2u4ci
+
+    steps:
+      - checkout
+      - run:
+          name: Download
+          command: curl -OLs https://eddelbuettel.github.io/r-ci/run.sh
+      - run:
+          name: Mode
+          command: chmod 0755 run.sh
+      - run:
+          name: Bootstrap
+          command: ./run.sh bootstrap
+      - run:
+          name: Dependencies
+          command: ./run.sh install_deps
+      - run:
+          name: Test
+          # set _R_CHECK_FORCE_SUGGESTS_="false" as needed
+          command: ./run.sh run_tests
+         
+workflows:
+  ci-workflow: 
+    jobs:
+      - ci
+      
+</code></pre>
+  
+  <!-- <ul class="actions stacked"> -->
+  <!--   <li><a href="#" class="button">Learn More</a></li> -->
+  <!-- </ul> -->
+</div>
+<div class="image">
+  <img src="https://eddelbuettel.github.io/html5-story/extra/architecture-7947724_1920.jpg" alt="" />
+</div>
+</section>
+
+<!-- Six -->
 <section class="spotlight style1 orient-left content-align-left image-position-center onscroll-image-fade-in" id="first">
 <div class="content content-align-right">
   <h3>Use with Docker</h3>
@@ -562,10 +615,10 @@ export _R_CHECK_FORCE_SUGGESTS_="true"; ./run.sh run_tests
 <div class="inner">
   <ul class="icons">
     <li><a href="https://github.com/eddelbuettel" class="icon brands style1 fa-github"><span class="label">GitHub</span></a></li> 
-    <li><a href="https://twitter.com/eddelbuettel" class="icon brands style1 fa-twitter"><span class="label">Twitter</span></a></li>
+    <!-- <li><a href="https://twitter.com/eddelbuettel" class="icon brands style1 fa-twitter"><span class="label">Twitter</span></a></li> -->
     <!-- <li><a href="#" class="icon brands style1 fa-facebook-f"><span class="label">Facebook</span></a></li> -->
     <!-- <li><a href="#" class="icon brands style1 fa-instagram"><span class="label">Instagram</span></a></li> -->
-    <li><a href="https://www.linkedin.com/in/dirkeddelbuettel/" class="icon brands style1 fa-linkedin-in"><span class="label">LinkedIn</span></a></li>
+    <!-- <li><a href="https://www.linkedin.com/in/dirkeddelbuettel/" class="icon brands style1 fa-linkedin-in"><span class="label">LinkedIn</span></a></li> -->
     <li><a href="mailto:dirk@eddelbuettel.com" class="icon style1 fa-envelope"><span class="label">Email</span></a></li>
   </ul>
   <p>
