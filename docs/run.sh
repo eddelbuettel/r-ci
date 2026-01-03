@@ -35,6 +35,8 @@ MAKEFLAGS=${MAKEFLAGS:-"-j 4"}
 
 ## Install Fortran on macOS as well
 BOOTSTRAP_MACOS_FORTRAN=${BOOTSTRAP_MACOS_FORTRAN:-"TRUE"}
+## Install OpenMP on macOS as well
+BOOTSTRAP_MACOS_OPENMP=${BOOTSTRAP_MACOS_OPENMP:-"TRUE"}
 
 R_BUILD_ARGS=${R_BUILD_ARGS-"--no-build-vignettes --no-manual"}
 R_CHECK_ARGS=${R_CHECK_ARGS-"--no-vignettes --no-manual --as-cran"}
@@ -271,6 +273,19 @@ BootstrapMacOptions() {
         sudo installer -pkg "/tmp/gfortran.pkg" -target /
         rm "/tmp/gfortran.pkg"
     fi
+
+    if [[ "$BOOTSTRAP_MACOS_OPENMP" == "TRUE" ]]; then
+        omptgz=openmp-17.0.6-darwin20-Release.tar.gz
+        wget -q https://mac.r-project.org/openmp/$omptgz -O /tmp/$omptgz
+        echo "Installing macOS OpenMP binary package"
+        sudo tar fvxz /tmp/$omptgz -C /
+        rm /tmp/$omptgz
+        sudo xcode-select -s /Applications/Xcode_16.2.app
+        echo "MACOSX_DEPLOYMENT_TARGET=11.0" >> $GITHUB_ENV
+        echo "  xcode is set: $(xcode-select --print-path)"
+        echo "  using SDK: $(xcrun --show-sdk-version)"
+    fi
+
 }
 
 EnsureDevtools() {
