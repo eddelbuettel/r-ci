@@ -274,7 +274,7 @@ BootstrapMacOptions() {
         rm "/tmp/gfortran.pkg"
     fi
 
-    if [[ "$BOOTSTRAP_MACOS_OPENMP" == "TRUE" ]]; then
+    if [[ "$BOOTSTRAP_MACOS_OPENMP" == "TRUE" ]] && [[ "$GITHUB_ACTIONS" == "true" ]]; then
         omptgz=openmp-17.0.6-darwin20-Release.tar.gz
         wget -q https://mac.r-project.org/openmp/$omptgz -O /tmp/$omptgz
         echo "Installing macOS OpenMP binary package"
