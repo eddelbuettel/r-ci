@@ -35,6 +35,8 @@ MAKEFLAGS=${MAKEFLAGS:-"-j 4"}
 
 ## Install Fortran on macOS as well
 BOOTSTRAP_MACOS_FORTRAN=${BOOTSTRAP_MACOS_FORTRAN:-"TRUE"}
+## Install OpenMP on macOS as well
+BOOTSTRAP_MACOS_OPENMP=${BOOTSTRAP_MACOS_OPENMP:-"TRUE"}
 
 R_BUILD_ARGS=${R_BUILD_ARGS-"--no-build-vignettes --no-manual"}
 R_CHECK_ARGS=${R_CHECK_ARGS-"--no-vignettes --no-manual --as-cran"}
@@ -271,6 +273,19 @@ BootstrapMacOptions() {
         sudo installer -pkg "/tmp/gfortran.pkg" -target /
         rm "/tmp/gfortran.pkg"
     fi
+
+    if [[ "$BOOTSTRAP_MACOS_OPENMP" == "TRUE" ]] && [[ "$GITHUB_ACTIONS" == "true" ]]; then
+        omptgz=openmp-17.0.6-darwin20-Release.tar.gz
+        wget -q https://mac.r-project.org/openmp/$omptgz -O /tmp/$omptgz
+        echo "Installing macOS OpenMP binary package"
+        sudo tar fvxz /tmp/$omptgz -C /
+        rm /tmp/$omptgz
+        sudo xcode-select -s /Applications/Xcode_16.2.app
+        echo "MACOSX_DEPLOYMENT_TARGET=11.0" >> $GITHUB_ENV
+        echo "  xcode is set: $(xcode-select --print-path)"
+        echo "  using SDK: $(xcrun --show-sdk-version)"
+    fi
+
 }
 
 EnsureDevtools() {
@@ -281,9 +296,9 @@ EnsureDevtools() {
 EnsureUnittestRunner() {
     if test -f DESCRIPTION; then
         if [[ "Linux" == "${OS}" ]]; then
-            sudo Rscript -e 'dcf <- read.dcf(file="DESCRIPTION")[1,]; if ("Suggests" %in% names(dcf)) { sug <- dcf[["Suggests"]]; pkg <- do.call(c, sapply(c("testthat", "tinytest", "RUnit"), function(p, sug) if (grepl(p, sug)) p else NULL, sug, USE.NAMES=FALSE)); if (!is.null(pkg)) install.packages(pkg, type="binary-source") }' > /dev/null
+            sudo Rscript -e 'dcf <- read.dcf(file="DESCRIPTION")[1,]; if ("Suggests" %in% names(dcf)) { sug <- dcf[["Suggests"]]; pkg <- do.call(c, lapply(c("testthat", "tinytest", "RUnit"), function(p, sug) if (grepl(p, sug)) p else NULL, sug)); if (!is.null(pkg)) install.packages(pkg, type="binary-source") }' > /dev/null
         else
-            sudo Rscript -e 'dcf <- read.dcf(file="DESCRIPTION")[1,]; if ("Suggests" %in% names(dcf)) { sug <- dcf[["Suggests"]]; pkg <- do.call(c, sapply(c("testthat", "tinytest", "RUnit"), function(p, sug) if (grepl(p, sug)) p else NULL, sug, USE.NAMES=FALSE)); if (!is.null(pkg)) install.packages(pkg) }'
+            sudo Rscript -e 'dcf <- read.dcf(file="DESCRIPTION")[1,]; if ("Suggests" %in% names(dcf)) { sug <- dcf[["Suggests"]]; pkg <- do.call(c, lapply(c("testthat", "tinytest", "RUnit"), function(p, sug) if (grepl(p, sug)) p else NULL, sug)); if (!is.null(pkg)) install.packages(pkg) }'
         fi
     fi
 }
@@ -441,9 +456,26 @@ UpdatePackages() {
     Rscript -e 'update.packages(ask=FALSE)'
 }
 
+getR() {
+
+    if [ ! -f /.dockerenv ]; then
+        ## no container, just use R
+        echo "R"
+    elif [ -f /usr/local/bin/Rdevel ]; then
+        ## in drd use Rdevel
+        echo "Rdevel"
+    else
+        ## fallback
+        echo "R"
+    fi
+}
+
 RunTests() {
-    echo "Building with: R CMD build ${R_BUILD_ARGS}"
-    R CMD build ${R_BUILD_ARGS} .
+    # Respect R-devel if it is in the container
+    R=$(getR)
+
+    echo "Building with: ${R} CMD build ${R_BUILD_ARGS}"
+    ${R} CMD build ${R_BUILD_ARGS} .
     # We want to grab the version we just built.
     FILE=$(ls -1t *.tar.gz | head -n 1)
 
@@ -452,12 +484,12 @@ RunTests() {
         R_CHECK_INSTALL_ARGS=${R_CHECK_INSTALL_ARGS-"--install-args=\"--build --install-tests\""}
     fi
 
-    echo "Testing with: R CMD check \"${FILE}\" ${R_CHECK_ARGS} ${R_CHECK_INSTALL_ARGS}"
+    echo "Testing with: ${R} CMD check \"${FILE}\" ${R_CHECK_ARGS} ${R_CHECK_INSTALL_ARGS}"
     _R_CHECK_CRAN_INCOMING_=${_R_CHECK_CRAN_INCOMING_:-FALSE}
     if [[ "$_R_CHECK_CRAN_INCOMING_" == "FALSE" ]]; then
         echo "(CRAN incoming checks are off)"
     fi
-    _R_CHECK_CRAN_INCOMING_=${_R_CHECK_CRAN_INCOMING_} R CMD check "${FILE}" ${R_CHECK_ARGS} ${R_CHECK_INSTALL_ARGS}
+    _R_CHECK_CRAN_INCOMING_=${_R_CHECK_CRAN_INCOMING_} ${R} CMD check "${FILE}" ${R_CHECK_ARGS} ${R_CHECK_INSTALL_ARGS}
 
     if [[ -n "${WARNINGS_ARE_ERRORS}" ]]; then
         if DumpLogsByExtension "00check.log" | grep -q WARNING; then
