@@ -19,11 +19,11 @@ slides](https://dirk.eddelbuettel.com/papers/r4_portable_ci.pdf).
 
 ### Basic Usage 
 
-#### See other repos
+#### Current Example
 
-The file `.github/workflows/ci.yaml` in many of my repos provides a working example. It is
-frequently a copy or variant of [the r-ci.yaml file here](docs/r-ci.yaml). It relies on a
-corresponding GitHub Action which _run boths setup and bootstrap steps_ and should be all you need. 
+The file `.github/workflows/ci.yaml` (also used in many of my repos) provides a working example. It
+is frequently a copy or variant of [the r-ci.yaml file here](docs/r-ci.yaml). It relies on a
+corresponding GitHub Action which _run boths setup and bootstrap steps_ and should be all you need.
 A minimal versions follows:
 
 ```yaml
@@ -68,7 +68,7 @@ jobs:
 Other variants can be found at different GitHub repos. They sometimes experiment with different
 containers, or with swapping `install_all` (which includes Suggests:) for `install_deps`.
  
-#### Old
+#### Older Example
 
 An older and minimal example of use with Travis follows:
 
