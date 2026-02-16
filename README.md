@@ -19,9 +19,60 @@ slides](https://dirk.eddelbuettel.com/papers/r4_portable_ci.pdf).
 
 ### Basic Usage 
 
-A minimal example of use with Travis follows:
+#### See other repos
 
-```sh
+The file `.github/workflows/ci.yaml` in many of my repos provides a working example. It is
+frequently a copy or variant of [the r-ci.yaml file here](docs/r-ci.yaml). It relies on a
+corresponding GitHub Action which _run boths setup and bootstrap steps_ and should be all you need. 
+A minimal versions follows:
+
+```yaml
+# Run CI for R using https://eddelbuettel.github.io/r-ci/
+
+name: ci
+
+on:
+  push:
+  pull_request:
+
+env:
+  _R_CHECK_FORCE_SUGGESTS_: "false"
+
+jobs:
+  ci:
+    strategy:
+      matrix:
+        include:
+          #- {os: macOS-latest}
+          - {os: ubuntu-latest}
+
+    runs-on: ${{ matrix.os }}
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup
+        uses: eddelbuettel/github-actions/r-ci@master
+
+      - name: Dependencies
+        run: ./run.sh install_deps
+
+      - name: Test
+        run: ./run.sh run_tests
+
+      #- name: Coverage
+      #  if: ${{ matrix.os == 'ubuntu-latest' }}
+      #  run: ./run.sh coverage
+```
+
+Other variants can be found at different GitHub repos. They sometimes experiment with different
+containers, or with swapping `install_all` (which includes Suggests:) for `install_deps`.
+ 
+#### Old
+
+An older and minimal example of use with Travis follows:
+
+```yaml
 language: c
 sudo: required
 dist: focal
@@ -55,9 +106,11 @@ versions (as used by
 We also use the same approach of downloading `run.sh` and invoking it for the different steps in
 with GitHub Actions (_e.g._ for
 [tidyCpp](https://github.com/eddelbuettel/tidycpp/blob/master/.github/workflows/R-CMD-check.yaml)). There
-is also an [Action for
+is also an [older Action `r-ci-setup` for
 GitHub](https://github.com/eddelbuettel/github-actions/tree/master/r-ci-setup) to download `run.sh`
-and set it up. Similarly, Azure Pipelines can be used (as was done by a test repo on Azure).
+and set it up. Similarly, Azure Pipelines can be used (as was done by a test repo on Azure).  The
+[newer Action `r-ci`](https://github.com/eddelbuettel/github-actions/tree/master/r-ci) is now
+preferred as it includes the bootstrap step.
 
 There are also other options of use with PPAs and more---for fullest details see the source of the
 shell script `run.sh`.
