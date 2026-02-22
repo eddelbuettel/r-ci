@@ -18,8 +18,9 @@ RVER=${RVER:-"4.5.2"}
 ## Optional drat repos, unset by default
 DRAT_REPOS=${DRAT_REPOS:-""}
 
-## Optional BSPM use, defaults to true for r2u
+## Optional BSPM or RAPT use, defaults to bspm f
 USE_BSPM=${USE_BSPM:-"TRUE"}
+USE_RAPT=${USE_RAPT:-"FALSE"}
 
 ## Optional additional PPAs, unset by default
 ADDED_PPAS=${ADDED_PPAS:-""}
@@ -228,12 +229,20 @@ BootstrapLinuxOptions() {
         ## 2023-02-20 for now stick with 0.3.10
         ## sudo Rscript --vanilla -e 'remotes::install_url("https://cloud.r-project.org/src/contrib/Archive/bspm/bspm_0.3.10.tar.gz")'
         ## 2023-03-17 back bspm now at 0.5.1
+        Retry sudo apt update --quiet --quiet --quiet > /dev/null
         Retry sudo apt install --quiet --quiet --quiet --yes --no-install-recommends r-cran-bspm > /dev/null
         echo "options(bspm.sudo = TRUE)" | sudo tee --append /etc/R/Rprofile.site > /dev/null
         echo "suppressMessages(bspm::enable())" | sudo tee --append /etc/R/Rprofile.site > /dev/null
         echo "options(bspm.version.check=FALSE)" | sudo tee --append /etc/R/Rprofile.site > /dev/null
         #echo "options(bspm.sudo=TRUE)" | sudo tee --append /etc/R/Rprofile.site > /dev/null
     fi
+    if [[ "${USE_RAPT}" == "TRUE" ]]; then
+        cd /tmp
+        wget https://eddelbuettel.github.io/r-ci/rapt/rapt_0.1.0-1_amd64.deb
+        sudo dpkg --install rapt_0.1.0-1_amd64.deb
+        rm rapt_0.1.0-1_amd64.deb
+    fi
+
 }
 
 BootstrapMac() {
