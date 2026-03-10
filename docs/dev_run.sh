@@ -224,10 +224,10 @@ BootstrapLinuxOptions() {
             texinfo lmodern
         # no longer exists: texlive-generic-recommended
     fi
-    if [[ "$BACKEND" == "BSPM" ]]; then
+    if [[ "${BACKEND}" == "BSPM" ]]; then
         USE_BSPM="TRUE"
         USE_RAPT="FALSE"
-    elif [[ "$BACKEND" == "RAPT" ]]; then
+    elif [[ "${BACKEND}" == "RAPT" ]]; then
         USE_BSPM="FALSE"
         USE_RAPT="TRUR"
     else
