@@ -18,9 +18,12 @@ RVER=${RVER:-"4.5.2"}
 ## Optional drat repos, unset by default
 DRAT_REPOS=${DRAT_REPOS:-""}
 
-## Optional BSPM or RAPT use, defaults to bspm f
+## Optional BSPM or RAPT use, defaults to bspm
+## These are here for backwards compatibility
 USE_BSPM=${USE_BSPM:-"TRUE"}
 USE_RAPT=${USE_RAPT:-"FALSE"}
+## Use BACKEND=... to pick
+BACKEND=${BACKEND:-"BSPM"}
 
 ## Optional additional PPAs, unset by default
 ADDED_PPAS=${ADDED_PPAS:-""}
@@ -220,6 +223,15 @@ BootstrapLinuxOptions() {
             texlive-extra-utils texlive-latex-recommended texlive-latex-extra \
             texinfo lmodern
         # no longer exists: texlive-generic-recommended
+    fi
+    if [[ "$BACKEND" == "BSPM"]]; then
+        USE_BSPM="TRUE"
+        USE_RAPT="FALSE"
+    elif [[ "$BACKEND" == "RAPT"]]; then
+        USE_BSPM="FALSE"
+        USE_RAPT="TRUR"
+    else
+        echo "*** Error: Unknown backend '$BACKEND'"
     fi
     if [[ "${USE_BSPM}" == "TRUE" ]]; then
         ## sudo Rscript --vanilla -e 'install.packages("bspm", repos="https://cran.r-project.org")'
