@@ -231,11 +231,12 @@ BootstrapLinuxOptions() {
     elif [[ "${BACKEND}" == "RAPT" ]]; then
         echo "Selecting 'rapt'"
         USE_BSPM="FALSE"
-        USE_RAPT="TRUR"
+        USE_RAPT="TRUE"
     else
         echo "*** Error: Unknown backend '$BACKEND'"
     fi
     if [[ "${USE_BSPM}" == "TRUE" ]]; then
+        echo "Preparing 'bspm'"
         ## sudo Rscript --vanilla -e 'install.packages("bspm", repos="https://cran.r-project.org")'
         ## sudo Rscript --vanilla -e 'remotes::install_github("Enchufa2/bspm")'
         ## for now to get 0.4.0.1 with type="binary-source"
@@ -251,11 +252,12 @@ BootstrapLinuxOptions() {
         #echo "options(bspm.sudo=TRUE)" | sudo tee --append /etc/R/Rprofile.site > /dev/null
     fi
     if [[ "${USE_RAPT}" == "TRUE" ]]; then
+        echo "Preparing 'rapt'"
         cd /tmp
         wget https://eddelbuettel.github.io/r-ci/rapt/rapt_0.1.0-1_amd64.deb
         sudo dpkg --install rapt_0.1.0-1_amd64.deb
         rm rapt_0.1.0-1_amd64.deb
-        sudo apt update --quiet --quiet --quiet > /dev/null
+        #sudo apt update --quiet --quiet --quiet > /dev/null
     fi
 
 }
