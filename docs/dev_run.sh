@@ -225,9 +225,11 @@ BootstrapLinuxOptions() {
         # no longer exists: texlive-generic-recommended
     fi
     if [[ "${BACKEND}" == "BSPM" ]]; then
+        echo "Selecting 'bspm'"
         USE_BSPM="TRUE"
         USE_RAPT="FALSE"
     elif [[ "${BACKEND}" == "RAPT" ]]; then
+        echo "Selecting 'rapt'"
         USE_BSPM="FALSE"
         USE_RAPT="TRUR"
     else
@@ -253,6 +255,7 @@ BootstrapLinuxOptions() {
         wget https://eddelbuettel.github.io/r-ci/rapt/rapt_0.1.0-1_amd64.deb
         sudo dpkg --install rapt_0.1.0-1_amd64.deb
         rm rapt_0.1.0-1_amd64.deb
+        sudo apt update --quiet --quiet --quiet > /dev/null
     fi
 
 }
