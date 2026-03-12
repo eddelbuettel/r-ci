@@ -33,10 +33,10 @@ COVERAGE_TYPE=${COVERAGE_TYPE:-"tests"}
 ## Let's see if the new runners with four virtual CPUs can be taken advantage of
 MAKEFLAGS=${MAKEFLAGS:-"-j 4"}
 
-## Install Fortran on macOS as well
-BOOTSTRAP_MACOS_FORTRAN=${BOOTSTRAP_MACOS_FORTRAN:-"TRUE"}
-## Install OpenMP on macOS as well
-BOOTSTRAP_MACOS_OPENMP=${BOOTSTRAP_MACOS_OPENMP:-"TRUE"}
+## Install Fortran on macOS as well -- no longer by default
+BOOTSTRAP_MACOS_FORTRAN=${BOOTSTRAP_MACOS_FORTRAN:-"FALSE"}
+## Install OpenMP on macOS as well -- no longer by default
+BOOTSTRAP_MACOS_OPENMP=${BOOTSTRAP_MACOS_OPENMP:-"FALSE"}
 
 R_BUILD_ARGS=${R_BUILD_ARGS-"--no-build-vignettes --no-manual"}
 R_CHECK_ARGS=${R_CHECK_ARGS-"--no-vignettes --no-manual --as-cran"}
