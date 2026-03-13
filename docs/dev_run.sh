@@ -38,9 +38,9 @@ COVERAGE_TYPE=${COVERAGE_TYPE:-"tests"}
 MAKEFLAGS=${MAKEFLAGS:-"-j 4"}
 
 ## Install Fortran on macOS as well -- no longer by default
-BOOTSTRAP_MACOS_FORTRAN=${BOOTSTRAP_MACOS_FORTRAN:-"FALSE"}
+BOOTSTRAP_MACOS_FORTRAN=${BOOTSTRAP_MACOS_FORTRAN:-"TRUE"}
 ## Install OpenMP on macOS as well -- no longer by default
-BOOTSTRAP_MACOS_OPENMP=${BOOTSTRAP_MACOS_OPENMP:-"FALSE"}
+BOOTSTRAP_MACOS_OPENMP=${BOOTSTRAP_MACOS_OPENMP:-"TRUE"}
 
 R_BUILD_ARGS=${R_BUILD_ARGS-"--no-build-vignettes --no-manual"}
 R_CHECK_ARGS=${R_CHECK_ARGS-"--no-vignettes --no-manual --as-cran"}
