@@ -293,16 +293,21 @@ BootstrapMacOptions() {
         sudo tlmgr install inconsolata upquote courier courier-scaled helvetic
     fi
 
+    ## See https://github.com/r-universe-org/actions/blob/v11/macos-prep/action.yml#L85-L91
     if [[ "$BOOTSTRAP_MACOS_FORTRAN" == "TRUE" ]]; then
-        wget -q https://mac.r-project.org/tools/gfortran-14.2-universal.pkg -O /tmp/gfortran.pkg
+        #wget -q https://mac.r-project.org/tools/gfortran-14.2-universal.pkg -O /tmp/gfortran.pkg
+        wget -q https://github.com/R-macos/gcc-14-branch/releases/download/gcc-14.2-darwin-r2.1/gfortran-14.2-universal.pkg -O /tmp/gfortran.pkg
         echo "Installing macOS Fortran binary package for R on ${ARCH}"
         sudo installer -pkg "/tmp/gfortran.pkg" -target /
         rm "/tmp/gfortran.pkg"
+        mkdir -p ~/.R
+        echo "FLIBS = /opt/gfortran/lib/gcc/aarch64-apple-darwin20.0/14.2.0/libemutls_w.a /opt/gfortran/lib/gcc/aarch64-apple-darwin20.0/14.2.0/libheapt_w.a -L/Library/Frameworks/R.framework/Resources/lib -lgfortran.5 -lquadmath.0" > ~/.R/Makevars
     fi
 
     if [[ "$BOOTSTRAP_MACOS_OPENMP" == "TRUE" ]] && [[ "$GITHUB_ACTIONS" == "true" ]]; then
         omptgz=openmp-17.0.6-darwin20-Release.tar.gz
-        wget -q https://mac.r-project.org/openmp/$omptgz -O /tmp/$omptgz
+        #wget -q https://mac.r-project.org/openmp/$omptgz -O /tmp/$omptgz
+        wget -q https://eddelbuettel.github.io/r-ci/macos/$omptgz -O /tmp/$omptgz
         echo "Installing macOS OpenMP binary package"
         sudo tar fvxz /tmp/$omptgz -C /
         rm /tmp/$omptgz
