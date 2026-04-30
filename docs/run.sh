@@ -212,8 +212,9 @@ EOF
     # Process options
     BootstrapLinuxOptions
 
-    # Hotfix
-    sudo apt install --yes --allow-downgrades r-base-core=4.5.3-1.2404.0 r-base-dev=4.5.3-1.2404.0 r-recommended=4.5.3-1.2404.0
+    # Hotfix while R 4.6.* updates for the few critical packages are being made
+    # cf https://github.com/eddelbuettel/R-4.6.0-binary-transition
+    # sudo apt install --yes --allow-downgrades r-base-core=4.5.3-1.2404.0 r-base-dev=4.5.3-1.2404.0 r-recommended=4.5.3-1.2404.0
 }
 
 BootstrapLinuxOptions() {
