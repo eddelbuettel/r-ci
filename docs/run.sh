@@ -211,6 +211,9 @@ EOF
 
     # Process options
     BootstrapLinuxOptions
+
+    # Hotfix
+    sudo apt install --yes --allow-downgrades r-base-core=4.5.3-1.2404.0 r-base-dev=4.5.3-1.2404.0 r-recommended=4.5.3-1.2404.0
 }
 
 BootstrapLinuxOptions() {
