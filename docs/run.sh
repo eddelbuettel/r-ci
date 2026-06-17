@@ -13,7 +13,7 @@ ARCH=$(uname -m)
 
 # Default CRAN repo (use the CDN) and R verssion
 CRAN=${CRAN:-"https://cloud.r-project.org"}
-RVER=${RVER:-"4.5.2"}
+RVER=${RVER:-"4.6.0"}
 
 ## Optional drat repos, unset by default
 DRAT_REPOS=${DRAT_REPOS:-""}
@@ -268,8 +268,7 @@ BootstrapLinuxOptions() {
 
 BootstrapMac() {
     # Install from latest CRAN binary build for OS X (given ${ARCH} from 'uname -m')
-    wget -q ${CRAN}/bin/macosx/big-sur-${ARCH}/base/R-${RVER}-${ARCH}.pkg -O /tmp/R-latest.pkg
-
+    wget -q ${CRAN}/bin/macosx/sonoma-${ARCH}/base/R-${RVER}-${ARCH}.pkg -O /tmp/R-latest.pkg
     echo "Installing macOS binary package for R on ${ARCH}"
     sudo installer -pkg "/tmp/R-latest.pkg" -target /
     rm "/tmp/R-latest.pkg"
