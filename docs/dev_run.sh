@@ -23,6 +23,9 @@ DRAT_REPOS=${DRAT_REPOS:-""}
 USE_BSPM=${USE_BSPM:-"TRUE"}
 USE_RAPT=${USE_RAPT:-"FALSE"}
 ## Use BACKEND=... to pick
+## Note that is you run this via the r-ci action, you can pick this
+## directly in the yaml code instead which is preferred, see
+##   https://github.com/eddelbuettel/github-actions/tree/master/r-ci
 BACKEND=${BACKEND:-"BSPM"}
 
 ## Optional additional PPAs, unset by default
@@ -213,6 +216,10 @@ EOF
 
     # Process options
     BootstrapLinuxOptions
+
+    # Hotfix while R 4.6.* updates for the few critical packages are being made
+    # cf https://github.com/eddelbuettel/R-4.6.0-binary-transition
+    # sudo apt install --yes --allow-downgrades r-base-core=4.5.3-1.2404.0 r-base-dev=4.5.3-1.2404.0 r-recommended=4.5.3-1.2404.0
 }
 
 BootstrapLinuxOptions() {

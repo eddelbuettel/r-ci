@@ -23,6 +23,9 @@ DRAT_REPOS=${DRAT_REPOS:-""}
 USE_BSPM=${USE_BSPM:-"TRUE"}
 USE_RAPT=${USE_RAPT:-"FALSE"}
 ## Use BACKEND=... to pick
+## Note that is you run this via the r-ci action, you can pick this
+## directly in the yaml code instead which is preferred, see
+##   https://github.com/eddelbuettel/github-actions/tree/master/r-ci
 BACKEND=${BACKEND:-"BSPM"}
 
 ## Optional additional PPAs, unset by default
