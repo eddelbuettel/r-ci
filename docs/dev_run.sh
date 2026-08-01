@@ -335,13 +335,17 @@ EnsureDevtools() {
 }
 
 EnsureUnittestRunner() {
+    echo "::group::EnsureUnittestRunner"
     if test -f DESCRIPTION; then
+        echo "Have DESCRIPTION"
         if [[ "Linux" == "${OS}" ]]; then
-            sudo Rscript -e 'dcf <- read.dcf(file="DESCRIPTION")[1,]; if ("Suggests" %in% names(dcf)) { sug <- dcf[["Suggests"]]; pkg <- do.call(c, lapply(c("testthat", "tinytest", "RUnit"), function(p, sug) if (grepl(p, sug)) p else NULL, sug)); if (!is.null(pkg)) install.packages(pkg, type="binary-source") }' > /dev/null
+            echo "Am on Linux"
+            sudo Rscript -e 'dcf <- read.dcf(file="DESCRIPTION")[1,]; if ("Suggests" %in% names(dcf)) { sug <- dcf[["Suggests"]]; pkg <- do.call(c, lapply(c("testthat", "tinytest", "RUnit"), function(p, sug) if (grepl(p, sug)) p else NULL, sug)); print(pkg); if (!is.null(pkg)) install.packages(pkg, type="binary-source") }' #> /dev/null
         else
             sudo Rscript -e 'dcf <- read.dcf(file="DESCRIPTION")[1,]; if ("Suggests" %in% names(dcf)) { sug <- dcf[["Suggests"]]; pkg <- do.call(c, lapply(c("testthat", "tinytest", "RUnit"), function(p, sug) if (grepl(p, sug)) p else NULL, sug)); if (!is.null(pkg)) install.packages(pkg) }'
         fi
     fi
+    echo "::endgroup::"
 }
 
 InstallIfNotYetInstalled() {
