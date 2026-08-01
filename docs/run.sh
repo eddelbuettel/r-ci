@@ -262,10 +262,9 @@ BootstrapLinuxOptions() {
     fi
     if [[ "${USE_RAPT}" == "TRUE" ]]; then
         echo "Preparing 'rapt'"
-        cd /tmp
-        wget https://eddelbuettel.github.io/r-ci/rapt/rapt_0.1.0-1_amd64.deb
-        sudo dpkg --install rapt_0.1.0-1_amd64.deb
-        rm rapt_0.1.0-1_amd64.deb
+        wget https://eddelbuettel.github.io/r-ci/rapt/rapt_0.1.0-1_amd64.deb -O /tmp/rapt$$.deb
+        sudo dpkg --install /tmp/rapt$$.deb
+        rm /tmp/rapt$$.deb
         #sudo apt update --quiet --quiet --quiet > /dev/null
     fi
 

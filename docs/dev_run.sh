@@ -262,11 +262,9 @@ BootstrapLinuxOptions() {
     fi
     if [[ "${USE_RAPT}" == "TRUE" ]]; then
         echo "Preparing 'rapt'"
-        pwd
         wget https://eddelbuettel.github.io/r-ci/rapt/rapt_0.1.0-1_amd64.deb -O /tmp/rapt.deb
         sudo dpkg --install /tmp/rapt.deb
         rm /tmp/rapt.deb
-        pwd
         #sudo apt update --quiet --quiet --quiet > /dev/null
     fi
 
@@ -336,21 +334,13 @@ EnsureDevtools() {
 }
 
 EnsureUnittestRunner() {
-    echo "***Entered EnsureUnittestRunner"
-    pwd
-    echo "::group::EnsureUnittestRunner"
-
     if test -f DESCRIPTION; then
-        echo "Have DESCRIPTION"
         if [[ "Linux" == "${OS}" ]]; then
-            echo "Am on Linux"
-            sudo Rscript -e 'dcf <- read.dcf(file="DESCRIPTION")[1,]; if ("Suggests" %in% names(dcf)) { sug <- dcf[["Suggests"]]; pkg <- do.call(c, lapply(c("testthat", "tinytest", "RUnit"), function(p, sug) if (grepl(p, sug)) p else NULL, sug)); print(pkg); if (!is.null(pkg)) install.packages(pkg, type="binary-source") }' #> /dev/null
+            sudo Rscript -e 'dcf <- read.dcf(file="DESCRIPTION")[1,]; if ("Suggests" %in% names(dcf)) { sug <- dcf[["Suggests"]]; pkg <- do.call(c, lapply(c("testthat", "tinytest", "RUnit"), function(p, sug) if (grepl(p, sug)) p else NULL, sug)); if (!is.null(pkg)) install.packages(pkg, type="binary-source") }' > /dev/null
         else
             sudo Rscript -e 'dcf <- read.dcf(file="DESCRIPTION")[1,]; if ("Suggests" %in% names(dcf)) { sug <- dcf[["Suggests"]]; pkg <- do.call(c, lapply(c("testthat", "tinytest", "RUnit"), function(p, sug) if (grepl(p, sug)) p else NULL, sug)); if (!is.null(pkg)) install.packages(pkg) }'
         fi
     fi
-    echo "::endgroup::"
-    echo "***Exiting EnsureUnittestRunner"
 }
 
 InstallIfNotYetInstalled() {
