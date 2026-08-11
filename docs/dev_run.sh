@@ -11,6 +11,13 @@ set -e
 OS=$(uname -s)
 ARCH=$(uname -m)
 
+# Release
+if [[ -f /etc/os-release ]]; then
+    RELEASE=$(awk -F= '/VERSION_CODENAME/ {print $2}' /etc/os-release)
+else
+    RELEASE="<unknown>"
+fi
+
 # Default CRAN repo (use the CDN) and R verssion
 CRAN=${CRAN:-"https://cloud.r-project.org"}
 RVER=${RVER:-"4.6.1"}
@@ -265,9 +272,21 @@ BootstrapLinuxOptions() {
     fi
     if [[ "${USE_RAPT}" == "TRUE" ]]; then
         echo "Preparing 'rapt'"
-        wget https://eddelbuettel.github.io/r-ci/rapt/rapt_0.1.0-1_amd64.deb -O /tmp/rapt.deb
-        sudo dpkg --install /tmp/rapt.deb
-        rm /tmp/rapt.deb
+        sudo tee /etc/apt/sources.list.d/rapt.sources > /dev/null <<'EOF'
+Types: deb
+URIs: https://cornball-ai.github.io/rapt
+Suites: ${RELEASE}
+Components: main
+Trusted: yes
+Enabled: yes
+EOF
+        #Retry sudo apt update --quiet --quiet --quiet > /dev/null
+        #Retry sudo apt install --quiet --quiet --quiet --yes --no-install-recommends r-cran-bspm > /dev/null
+        sudo apt update
+        sudo apt install --yes --no-install-recommends rapt
+        #wget https://eddelbuettel.github.io/r-ci/rapt/rapt_0.1.0-1_amd64.deb -O /tmp/rapt.deb
+        #sudo dpkg --install /tmp/rapt.deb
+        #rm /tmp/rapt.deb
         #sudo apt update --quiet --quiet --quiet > /dev/null
     fi
 
