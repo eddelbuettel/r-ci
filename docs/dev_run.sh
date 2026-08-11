@@ -280,10 +280,8 @@ Components: main
 Trusted: yes
 Enabled: yes
 EOF
-        #Retry sudo apt update --quiet --quiet --quiet > /dev/null
-        #Retry sudo apt install --quiet --quiet --quiet --yes --no-install-recommends r-cran-bspm > /dev/null
-        sudo apt update
-        sudo apt install --yes --no-install-recommends rapt
+        Retry sudo apt update --quiet --quiet --quiet > /dev/null
+        Retry sudo apt install --quiet --quiet --quiet --yes --no-install-recommends rapt > /dev/null
         #wget https://eddelbuettel.github.io/r-ci/rapt/rapt_0.1.0-1_amd64.deb -O /tmp/rapt.deb
         #sudo dpkg --install /tmp/rapt.deb
         #rm /tmp/rapt.deb
