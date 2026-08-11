@@ -272,7 +272,7 @@ BootstrapLinuxOptions() {
     fi
     if [[ "${USE_RAPT}" == "TRUE" ]]; then
         echo "Preparing 'rapt'"
-        sudo tee /etc/apt/sources.list.d/rapt.sources > /dev/null <<'EOF'
+        sudo tee /etc/apt/sources.list.d/rapt.sources > /dev/null <<EOF
 Types: deb
 URIs: https://cornball-ai.github.io/rapt
 Suites: ${RELEASE}
