@@ -115,12 +115,15 @@ InstallPandoc() {
 BootstrapLinux() {
     ## Check for sudo and install if needed:
     ## - normal actions runs as runner (needs it)
-    ## - container runs as root and needs it _because all th expressions below have it_
+    ## - container runs as root and needs it _because all the expressions below have it_
     ##   (we could, one presumes, add an 'empty' shell script named 'sudo' that runs '$@'...)
     if ! (test -x /usr/bin/sudo); then
         apt update --quiet --quiet --quiet > /dev/null
         apt install --quiet --quiet --quiet --yes --no-install-recommends sudo > /dev/null
     fi
+
+    ## Tell apt to try multiple times
+    echo 'Acquire::Retries "3";' | sudo tee /etc/apt/apt.conf.d/91-retries.conf > /dev/null
 
     ## Check for lsb_release and install if needed
     test -x /usr/bin/lsb_release || sudo apt install --quiet --quiet --quiet --yes --no-install-recommends lsb-release
