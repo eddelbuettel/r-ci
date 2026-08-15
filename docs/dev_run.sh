@@ -64,6 +64,7 @@ ShowBanner() {
     echo "r-ci: Portable CI for R at Travis, GitHub Actions, Azure, ..."
     echo ""
     echo "Current Ubuntu distribution per 'lsb_release': '$(lsb_release -ds)' aka '$(lsb_release -cs)'"
+    echo "Running via external IP address $(curl -s ipinfo.io/ip)"
     echo ""
 }
 
