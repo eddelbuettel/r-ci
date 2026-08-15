@@ -11,7 +11,7 @@ set -e
 OS=$(uname -s)
 ARCH=$(uname -m)
 
-# # Release (used for rapt sources entry) (or use $(shell lsb_release -cs))
+# # Release (used for rapt sources entry) (or use $(lsb_release -cs))
 # if [[ -f /etc/os-release ]]; then
 #     RELEASE=$(awk -F= '/VERSION_CODENAME/ {print $2}' /etc/os-release)
 # else
@@ -281,6 +281,7 @@ Components: main
 Trusted: yes
 Enabled: yes
 EOF
+        cat /etc/apt/sources.list.d/rapt.sources
         Retry sudo apt update --quiet --quiet --quiet > /dev/null
         Retry sudo apt install --quiet --quiet --quiet --yes --no-install-recommends rapt > /dev/null
         #wget https://eddelbuettel.github.io/r-ci/rapt/rapt_0.1.0-1_amd64.deb -O /tmp/rapt.deb
