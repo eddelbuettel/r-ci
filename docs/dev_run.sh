@@ -11,12 +11,12 @@ set -e
 OS=$(uname -s)
 ARCH=$(uname -m)
 
-# Release
-if [[ -f /etc/os-release ]]; then
-    RELEASE=$(awk -F= '/VERSION_CODENAME/ {print $2}' /etc/os-release)
-else
-    RELEASE="<unknown>"
-fi
+# # Release (used for rapt sources entry) (or use $(shell lsb_release -cs))
+# if [[ -f /etc/os-release ]]; then
+#     RELEASE=$(awk -F= '/VERSION_CODENAME/ {print $2}' /etc/os-release)
+# else
+#     RELEASE="<unknown>"
+# fi
 
 # Default CRAN repo (use the CDN) and R verssion
 CRAN=${CRAN:-"https://cloud.r-project.org"}
@@ -276,7 +276,7 @@ BootstrapLinuxOptions() {
         sudo tee /etc/apt/sources.list.d/rapt.sources > /dev/null <<EOF
 Types: deb
 URIs: https://cornball-ai.github.io/rapt
-Suites: ${RELEASE}
+Suites: $(lsb_release -cs)
 Components: main
 Trusted: yes
 Enabled: yes
