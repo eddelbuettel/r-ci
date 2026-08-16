@@ -11,6 +11,14 @@ set -e
 OS=$(uname -s)
 ARCH=$(uname -m)
 
+# Release (used for rapt sources entry) (or use $(lsb_release -cs), but at the
+# start we have not yet ensured it is installed)
+if [[ -f /etc/os-release ]]; then
+    RELEASE=$(awk -F= '/VERSION_CODENAME/ {print $2}' /etc/os-release)
+else
+    RELEASE="<unknown>"
+fi
+
 # Default CRAN repo (use the CDN) and R verssion
 CRAN=${CRAN:-"https://cloud.r-project.org"}
 RVER=${RVER:-"4.6.1"}
@@ -56,7 +64,8 @@ ShowBanner() {
     echo ""
     echo "r-ci: Portable CI for R at Travis, GitHub Actions, Azure, ..."
     echo ""
-    echo "Current Ubuntu distribution per 'lsb_release': '$(lsb_release -ds)' aka '$(lsb_release -cs)'"
+    echo "Current Ubuntu distribution per 'lsb_release': '$(lsb_release -ds)' aka '${RELEASE}'"
+    echo "Running via external IP address $(curl -s ipinfo.io/ip)"
     echo ""
 }
 
@@ -115,12 +124,15 @@ InstallPandoc() {
 BootstrapLinux() {
     ## Check for sudo and install if needed:
     ## - normal actions runs as runner (needs it)
-    ## - container runs as root and needs it _because all th expressions below have it_
+    ## - container runs as root and needs it _because all the expressions below have it_
     ##   (we could, one presumes, add an 'empty' shell script named 'sudo' that runs '$@'...)
     if ! (test -x /usr/bin/sudo); then
         apt update --quiet --quiet --quiet > /dev/null
         apt install --quiet --quiet --quiet --yes --no-install-recommends sudo > /dev/null
     fi
+
+    ## Tell apt to try multiple times
+    echo 'Acquire::Retries "3";' | sudo tee /etc/apt/apt.conf.d/91-retries.conf > /dev/null
 
     ## Check for lsb_release and install if needed
     test -x /usr/bin/lsb_release || sudo apt install --quiet --quiet --quiet --yes --no-install-recommends lsb-release
@@ -140,9 +152,9 @@ BootstrapLinux() {
 
         #sudo apt update -qq && sudo apt install --quiet --quiet --quiet --yes --no-install-recommends wget ca-certificates dirmngr gnupg gpg-agent
         wget -q -O- https://eddelbuettel.github.io/r2u/assets/dirk_eddelbuettel_key.asc | sudo tee -a /etc/apt/trusted.gpg.d/cranapt_key.asc > /dev/null
-        echo "deb [arch=amd64] https://r2u.stat.illinois.edu/ubuntu $(lsb_release -cs) main" | sudo tee -a /etc/apt/sources.list.d/cranapt.list > /dev/null
+        echo "deb [arch=amd64,arm64] https://r2u.stat.illinois.edu/ubuntu ${RELEASE} main" | sudo tee -a /etc/apt/sources.list.d/cranapt.list > /dev/null
         wget -q -O- https://cloud.r-project.org/bin/linux/ubuntu/marutter_pubkey.asc | sudo tee -a /etc/apt/trusted.gpg.d/cran_ubuntu_key.asc > /dev/null
-        echo "deb [arch=amd64] https://cloud.r-project.org/bin/linux/ubuntu $(lsb_release -cs)-cran40/" | sudo tee -a /etc/apt/sources.list.d/cran_r.list > /dev/null
+        echo "deb [arch=amd64,arm64] https://cloud.r-project.org/bin/linux/ubuntu ${RELEASE}-cran40/" | sudo tee -a /etc/apt/sources.list.d/cran_r.list > /dev/null
     fi
     if ! (test -f /etc/apt/preferences.d/99r2u); then
         cat <<EOF | sudo tee -a /etc/apt/preferences.d/99cranapt > /dev/null
@@ -262,9 +274,19 @@ BootstrapLinuxOptions() {
     fi
     if [[ "${USE_RAPT}" == "TRUE" ]]; then
         echo "Preparing 'rapt'"
-        wget https://eddelbuettel.github.io/r-ci/rapt/rapt_0.1.0-1_amd64.deb -O /tmp/rapt$$.deb
-        sudo dpkg --install /tmp/rapt$$.deb
-        rm /tmp/rapt$$.deb
+        sudo tee /etc/apt/sources.list.d/rapt.sources > /dev/null <<EOF
+Types: deb
+URIs: https://cornball-ai.github.io/rapt
+Suites: ${RELEASE}
+Components: main
+Trusted: yes
+Enabled: yes
+EOF
+        Retry sudo apt update --quiet --quiet --quiet > /dev/null
+        Retry sudo apt install --quiet --quiet --quiet --yes --no-install-recommends rapt > /dev/null
+        #wget https://eddelbuettel.github.io/r-ci/rapt/rapt_0.1.0-1_amd64.deb -O /tmp/rapt.deb
+        #sudo dpkg --install /tmp/rapt.deb
+        #rm /tmp/rapt.deb
         #sudo apt update --quiet --quiet --quiet > /dev/null
     fi
 
