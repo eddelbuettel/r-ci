@@ -194,9 +194,8 @@ EOF
             sudo add-apt-repository -y "${ppa}"
         done
 
-        # Update after adding all repositories.  Retry several times to work around
-        # flaky connection to Launchpad PPAs.
-        Retry sudo apt update --quiet --quiet
+        # Update after adding all repositories.
+        sudo apt update --quiet --quiet
     fi
 
     # Install an R development environment. qpdf is also needed for
@@ -205,7 +204,7 @@ EOF
     # May 2020: we also need devscripts for checkbashism
     # Sep 2020: add bspm and remotes
     if ! (test -f /usr/bin/R); then
-        Retry sudo apt install --quiet --quiet --quiet --yes --no-install-recommends r-base-dev r-recommended > /dev/null
+        sudo apt install --quiet --quiet --quiet --yes --no-install-recommends r-base-dev r-recommended > /dev/null
 
         #sudo cp -ax /usr/lib/R/site-library/littler/examples/{build.r,check.r,install*.r,update.r} /usr/local/bin
         ## for now also from littler from GH
@@ -223,7 +222,7 @@ EOF
     fi
 
     if ! (test -f /usr/bin/qpdf); then
-        Retry sudo apt install --quiet --quiet --quiet --yes --no-install-recommends qpdf devscripts > /dev/null
+        sudo apt install --quiet --quiet --quiet --yes --no-install-recommends qpdf devscripts > /dev/null
     fi
 
     # Process options
@@ -238,7 +237,7 @@ BootstrapLinuxOptions() {
     if [[ -n "$BOOTSTRAP_LATEX" ]]; then
         # We add a backports PPA for more recent TeX packages.
         # sudo add-apt-repository -y "ppa:texlive-backports/ppa"
-        Retry sudo apt-get install -y --no-install-recommends \
+        sudo apt-get install -y --no-install-recommends \
             texlive-base texlive-latex-base \
             texlive-fonts-recommended texlive-fonts-extra \
             texlive-extra-utils texlive-latex-recommended texlive-latex-extra \
@@ -265,8 +264,8 @@ BootstrapLinuxOptions() {
         ## 2023-02-20 for now stick with 0.3.10
         ## sudo Rscript --vanilla -e 'remotes::install_url("https://cloud.r-project.org/src/contrib/Archive/bspm/bspm_0.3.10.tar.gz")'
         ## 2023-03-17 back bspm now at 0.5.1
-        Retry sudo apt update --quiet --quiet --quiet > /dev/null
-        Retry sudo apt install --quiet --quiet --quiet --yes --no-install-recommends r-cran-bspm > /dev/null
+        sudo apt update --quiet --quiet --quiet > /dev/null
+        sudo apt install --quiet --quiet --quiet --yes --no-install-recommends r-cran-bspm > /dev/null
         echo "options(bspm.sudo = TRUE)" | sudo tee --append /etc/R/Rprofile.site > /dev/null
         echo "suppressMessages(bspm::enable())" | sudo tee --append /etc/R/Rprofile.site > /dev/null
         echo "options(bspm.version.check=FALSE)" | sudo tee --append /etc/R/Rprofile.site > /dev/null
@@ -282,8 +281,8 @@ Components: main
 Trusted: yes
 Enabled: yes
 EOF
-        Retry sudo apt update --quiet --quiet --quiet > /dev/null
-        Retry sudo apt install --quiet --quiet --quiet --yes --no-install-recommends rapt > /dev/null
+        sudo apt update --quiet --quiet --quiet > /dev/null
+        sudo apt install --quiet --quiet --quiet --yes --no-install-recommends rapt > /dev/null
         #wget https://eddelbuettel.github.io/r-ci/rapt/rapt_0.1.0-1_amd64.deb -O /tmp/rapt.deb
         #sudo dpkg --install /tmp/rapt.deb
         #rm /tmp/rapt.deb
@@ -388,7 +387,7 @@ AptGetInstall() {
     fi
 
     echo "Installing apt package(s) $@"
-    Retry sudo apt --yes --no-install-recommends --allow-unauthenticated install "$@"
+    sudo apt --yes --no-install-recommends --allow-unauthenticated install "$@"
 }
 
 DpkgCurlInstall() {
