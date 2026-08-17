@@ -49,7 +49,7 @@ jobs:
     runs-on: ${{ matrix.os }}
 
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
 
       - name: Setup
         uses: eddelbuettel/github-actions/r-ci@master
@@ -60,9 +60,15 @@ jobs:
       - name: Test
         run: ./run.sh run_tests
 
+      #- name: Logs
+      #  run: ./run.sh dump_logs
+      #  if: failure()
+        
       #- name: Coverage
       #  if: ${{ matrix.os == 'ubuntu-latest' }}
       #  run: ./run.sh coverage
+      #  env:
+      #    CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}  
 ```
 
 Other variants can be found at different GitHub repos. They sometimes experiment with different
