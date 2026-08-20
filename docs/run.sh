@@ -142,7 +142,7 @@ BootstrapLinux() {
     ## If opted in, trim apt sources
     if [[ "${TRIM_APT_SOURCES}" != "FALSE" ]]; then
         sudo rm -vf /etc/apt/sources.list.d/*.list
-        sudo sed -i -e 's/azure\.//' /etc/apt/apt-mirrors.txt
+        test -f /etc/apt/apt-mirrors.txt && sudo sed -i -e 's/azure\.//' /etc/apt/apt-mirrors.txt
     fi
 
     ## from r2u setup script
