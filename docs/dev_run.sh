@@ -96,16 +96,21 @@ Bootstrap() {
     #fi
 
     # Default packages
-    sudo Rscript -e 'if (!requireNamespace("remotes", quietly=TRUE)) install.packages("remotes")'
+    echo "::group::Add remotes"
+    sudo Rscript -e 'if (!requireNamespace("remotes", quietly=TRUE)) install.packages("remotes")' > /dev/null
+    echo "::endgroup::"
 
     # Make sure unit test package (among testthat, tinytest, RUnit) installed
     EnsureUnittestRunner
 
     # Report version
+    echo "::group::Show sessionInfo()"
     Rscript -e 'sessionInfo()'
+    echo "::endgroup::"
 }
 
 SetRepos() {
+    echo "::group::Setting repos"
     echo "local({" >> ~/.Rprofile
     echo "   r <- getOption(\"repos\");" >> ~/.Rprofile
     echo "   r[\"CRAN\"] <- \"${CRAN}\"" >> ~/.Rprofile
@@ -114,6 +119,7 @@ SetRepos() {
     done
     echo "   options(repos=r)" >> ~/.Rprofile
     echo "})" >> ~/.Rprofile
+    echo "::endgroup::"
 }
 
 InstallPandoc() {
@@ -127,29 +133,39 @@ BootstrapLinux() {
     ## - container runs as root and needs it _because all the expressions below have it_
     ##   (we could, one presumes, add an 'empty' shell script named 'sudo' that runs '$@'...)
     if ! (test -x /usr/bin/sudo); then
-        apt update --quiet --quiet --quiet > /dev/null
-        apt install --quiet --quiet --quiet --yes --no-install-recommends sudo > /dev/null
+        echo "::group::Adding sudo"
+        apt update
+        apt install --yes --no-install-recommends sudo
+        echo "::endgroup::"
     fi
 
     ## Tell apt to try multiple times
     echo 'Acquire::Retries "3";' | sudo tee /etc/apt/apt.conf.d/91-retries.conf > /dev/null
 
     ## Check for lsb_release and install if needed
-    test -x /usr/bin/lsb_release || sudo apt install --quiet --quiet --quiet --yes --no-install-recommends lsb-release
+    if ! (test -x /usr/bin/lsb_release); then
+        echo "::group::Adding lsb-release"
+        sudo apt install --yes --no-install-recommends lsb-release
+        echo "::endgroup::"
+    fi
 
     ShowBanner
 
     ## If opted in, trim apt sources
     if [[ "${TRIM_APT_SOURCES}" != "FALSE" ]]; then
+        echo "::group::Adjust apt sources"
         sudo rm -vf /etc/apt/sources.list.d/*.list
+        sudo rm -vf /etc/apt/sources.list.d/google*.sources
         test -f /etc/apt/apt-mirrors.txt && sudo sed -i -e 's/azure\.//' /etc/apt/apt-mirrors.txt
+        ls -l /etc/apt/sources.list.d/
+        echo "::endgroup::"
     fi
 
     ## from r2u setup script
     if ! (test -f /etc/apt/sources.list.d/r2u.sources); then
         ## Hotfix for key issue
         echo 'Acquire::AllowInsecureRepositories "true";' | sudo tee /etc/apt/apt.conf.d/90local-secure > /dev/null
-        sudo apt update --quiet --quiet
+        #sudo apt update --quiet --quiet
 
         #sudo apt update -qq && sudo apt install --quiet --quiet --quiet --yes --no-install-recommends wget ca-certificates dirmngr gnupg gpg-agent
         wget -q -O- https://eddelbuettel.github.io/r2u/assets/dirk_eddelbuettel_key.asc | sudo tee -a /etc/apt/trusted.gpg.d/cranapt_key.asc > /dev/null
@@ -189,14 +205,20 @@ EOF
     ## Added PPAs, if given
     if [[ "${ADDED_PPAS}" != "" ]]; then
         ## Check for add-apt-repository and install if needed, using a fudge around the (manual) tz config dialog
-        test -x /usr/bin/add-apt-repository || \
-                (echo 12 > /tmp/input.txt; echo 5 >> /tmp/input.txt; sudo apt install --quiet --yes tzdata < /tmp/input.txt; sudo apt install --quiet --yes --no-install-recommends software-properties-common)
+        echo "::group::Adding PPAs"
+        if ! (test -x /usr/bin/add-apt-repository); then
+            echo 12 > /tmp/input.txt
+            echo 5 >> /tmp/input.txt
+            sudo apt install --yes tzdata < /tmp/input.txt
+            sudo apt install --yes --no-install-recommends software-properties-common
+        fi
         for ppa in "${ADDED_PPAS}"; do
             sudo add-apt-repository -y "${ppa}"
         done
 
         # Update after adding all repositories.
-        sudo apt update --quiet --quiet
+        sudo apt update
+        echo "::endgroup::"
     fi
 
     # Install an R development environment. qpdf is also needed for
@@ -205,7 +227,8 @@ EOF
     # May 2020: we also need devscripts for checkbashism
     # Sep 2020: add bspm and remotes
     if ! (test -f /usr/bin/R); then
-        sudo apt install --quiet --quiet --quiet --yes --no-install-recommends r-base-dev r-recommended > /dev/null
+        echo "::group::Adding R"
+        sudo apt install --yes --no-install-recommends r-base-dev r-recommended
 
         #sudo cp -ax /usr/lib/R/site-library/littler/examples/{build.r,check.r,install*.r,update.r} /usr/local/bin
         ## for now also from littler from GH
@@ -220,10 +243,13 @@ EOF
         # This should really be via 'staff adduser travis staff'
         # but that may affect only the next shell
         sudo chmod 2777 /usr/local/lib/R /usr/local/lib/R/site-library
+        echo "::endgroup::"
     fi
 
     if ! (test -f /usr/bin/qpdf); then
-        sudo apt install --quiet --quiet --quiet --yes --no-install-recommends qpdf devscripts > /dev/null
+        echo "::group::Adding qpdf devscripts"
+        sudo apt install --yes --no-install-recommends qpdf devscripts
+        echo "::endgroup::"
     fi
 
     # Process options
@@ -245,6 +271,8 @@ BootstrapLinuxOptions() {
             texinfo lmodern
         # no longer exists: texlive-generic-recommended
     fi
+
+    echo "::group::Adding bspm or rapt"
     if [[ "${BACKEND}" == "BSPM" ]]; then
         echo "Selecting 'bspm'"
         USE_BSPM="TRUE"
@@ -265,8 +293,8 @@ BootstrapLinuxOptions() {
         ## 2023-02-20 for now stick with 0.3.10
         ## sudo Rscript --vanilla -e 'remotes::install_url("https://cloud.r-project.org/src/contrib/Archive/bspm/bspm_0.3.10.tar.gz")'
         ## 2023-03-17 back bspm now at 0.5.1
-        sudo apt update --quiet --quiet --quiet > /dev/null
-        sudo apt install --quiet --quiet --quiet --yes --no-install-recommends r-cran-bspm > /dev/null
+        sudo apt update
+        sudo apt install --yes --no-install-recommends r-cran-bspm
         echo "options(bspm.sudo = TRUE)" | sudo tee --append /etc/R/Rprofile.site > /dev/null
         echo "suppressMessages(bspm::enable())" | sudo tee --append /etc/R/Rprofile.site > /dev/null
         echo "options(bspm.version.check=FALSE)" | sudo tee --append /etc/R/Rprofile.site > /dev/null
@@ -282,13 +310,14 @@ Components: main
 Trusted: yes
 Enabled: yes
 EOF
-        sudo apt update --quiet --quiet --quiet > /dev/null
-        sudo apt install --quiet --quiet --quiet --yes --no-install-recommends rapt > /dev/null
+        sudo apt update
+        sudo apt install --yes --no-install-recommends rapt
         #wget https://eddelbuettel.github.io/r-ci/rapt/rapt_0.1.0-1_amd64.deb -O /tmp/rapt.deb
         #sudo dpkg --install /tmp/rapt.deb
         #rm /tmp/rapt.deb
         #sudo apt update --quiet --quiet --quiet > /dev/null
     fi
+    echo "::endgroup::"
 
 }
 
@@ -357,11 +386,13 @@ EnsureDevtools() {
 
 EnsureUnittestRunner() {
     if test -f DESCRIPTION; then
+        echo "::group::Adding unit test runners"
         if [[ "Linux" == "${OS}" ]]; then
-            sudo Rscript -e 'dcf <- read.dcf(file="DESCRIPTION")[1,]; if ("Suggests" %in% names(dcf)) { sug <- dcf[["Suggests"]]; pkg <- do.call(c, lapply(c("testthat", "tinytest", "RUnit"), function(p, sug) if (grepl(p, sug)) p else NULL, sug)); if (!is.null(pkg)) install.packages(pkg, type="binary-source") }' > /dev/null
+            sudo Rscript -e 'dcf <- read.dcf(file="DESCRIPTION")[1,]; if ("Suggests" %in% names(dcf)) { sug <- dcf[["Suggests"]]; pkg <- do.call(c, lapply(c("testthat", "tinytest", "RUnit"), function(p, sug) if (grepl(p, sug)) p else NULL, sug)); if (!is.null(pkg)) install.packages(pkg, type="binary-source") }'
         else
             sudo Rscript -e 'dcf <- read.dcf(file="DESCRIPTION")[1,]; if ("Suggests" %in% names(dcf)) { sug <- dcf[["Suggests"]]; pkg <- do.call(c, lapply(c("testthat", "tinytest", "RUnit"), function(p, sug) if (grepl(p, sug)) p else NULL, sug)); if (!is.null(pkg)) install.packages(pkg) }'
         fi
+        echo "::endgroup::"
     fi
 }
 
@@ -563,6 +594,10 @@ RunTests() {
 }
 
 Retry() {
+    ## deprecated 2026-Aug
+    echo "Deprecated"
+    exit 0
+
     if "$@"; then
         return 0
     fi
