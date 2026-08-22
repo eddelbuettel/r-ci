@@ -64,8 +64,18 @@ ShowBanner() {
     echo ""
     echo "r-ci: Portable CI for R at Travis, GitHub Actions, Azure, ..."
     echo ""
-    echo "Current Ubuntu distribution per 'lsb_release': '$(lsb_release -ds)' aka '${RELEASE}'"
-    echo "Running via external IP address $(curl -s ipinfo.io/ip)"
+    echo "Current Ubuntu distribution: '$(lsb_release -ds)' aka '${RELEASE}'"
+    extip=$(curl -s ipinfo.io/ip)
+    echo "Running via external IP address ${extip}"
+
+    webstatus=$(curl -s -o /dev/null -w "%{http_code}" https://r2u.stat.illinois.edu)
+    if [[ "${webstatus}" == "200" ]]; then
+        echo "The r2u repository is reachable"
+    else
+        echo "The r2u repository is **not reachable**"
+        echo "::error::Existing as r2u.stat.illinois.edu is blocked for ${extip}. Consider re-running to obtain different IP."
+        exit 1
+    fi
     echo ""
 }
 
@@ -96,9 +106,9 @@ Bootstrap() {
     #fi
 
     # Default packages
-    echo "::group::Add remotes"
-    sudo Rscript -e 'if (!requireNamespace("remotes", quietly=TRUE)) install.packages("remotes")' > /dev/null
-    echo "::endgroup::"
+    #echo "::group::Add remotes"
+    #sudo Rscript -e 'if (!requireNamespace("remotes", quietly=TRUE)) install.packages("remotes")' > /dev/null
+    #echo "::endgroup::"
 
     # Make sure unit test package (among testthat, tinytest, RUnit) installed
     EnsureUnittestRunner
@@ -110,7 +120,6 @@ Bootstrap() {
 }
 
 SetRepos() {
-    echo "::group::Setting repos"
     echo "local({" >> ~/.Rprofile
     echo "   r <- getOption(\"repos\");" >> ~/.Rprofile
     echo "   r[\"CRAN\"] <- \"${CRAN}\"" >> ~/.Rprofile
@@ -119,7 +128,6 @@ SetRepos() {
     done
     echo "   options(repos=r)" >> ~/.Rprofile
     echo "})" >> ~/.Rprofile
-    echo "::endgroup::"
 }
 
 InstallPandoc() {
@@ -168,10 +176,29 @@ BootstrapLinux() {
         #sudo apt update --quiet --quiet
 
         #sudo apt update -qq && sudo apt install --quiet --quiet --quiet --yes --no-install-recommends wget ca-certificates dirmngr gnupg gpg-agent
-        wget -q -O- https://eddelbuettel.github.io/r2u/assets/dirk_eddelbuettel_key.asc | sudo tee -a /etc/apt/trusted.gpg.d/cranapt_key.asc > /dev/null
-        echo "deb [arch=amd64,arm64] https://r2u.stat.illinois.edu/ubuntu ${RELEASE} main" | sudo tee -a /etc/apt/sources.list.d/cranapt.list > /dev/null
-        wget -q -O- https://cloud.r-project.org/bin/linux/ubuntu/marutter_pubkey.asc | sudo tee -a /etc/apt/trusted.gpg.d/cran_ubuntu_key.asc > /dev/null
-        echo "deb [arch=amd64,arm64] https://cloud.r-project.org/bin/linux/ubuntu ${RELEASE}-cran40/" | sudo tee -a /etc/apt/sources.list.d/cran_r.list > /dev/null
+        wget -q -O- https://eddelbuettel.github.io/r2u/assets/dirk_eddelbuettel_key.asc | \
+            sudo tee -a /etc/apt/trusted.gpg.d/eddelbuettel.asc > /dev/null
+        #echo "deb [arch=amd64,arm64] https://r2u.stat.illinois.edu/ubuntu ${RELEASE} main" | sudo tee -a /etc/apt/sources.list.d/cranapt.list > /dev/null
+        cat <<EOF | sudo tee -a /etc/apt/sources.list.d/r2u.sources >/dev/null
+Types: deb
+URIs: http://r2u.stat.illinois.edu/ubuntu
+Suites: ${RELEASE}
+Components: main
+Arch: amd64, arm64
+Signed-By: /etc/apt/trusted.gpg.d/eddelbuettel.asc
+EOF
+
+        wget -q -O- https://cloud.r-project.org/bin/linux/ubuntu/marutter_pubkey.asc | \
+            sudo tee -a /etc/apt/trusted.gpg.d/rutter.asc > /dev/null
+        #echo "deb [arch=amd64,arm64] https://cloud.r-project.org/bin/linux/ubuntu ${RELEASE}-cran40/" | sudo tee -a /etc/apt/sources.list.d/cran_r.list > /dev/null
+        cat <<EOF | sudo tee -a /etc/apt/sources.list.d/cran.sources >/dev/null
+Types: deb
+URIs: https://cloud.r-project.org/bin/linux/ubuntu
+Suites: ${RELEASE}-cran40/
+Components:
+Arch: amd64, arm64
+Signed-By: /etc/apt/trusted.gpg.d/rutter.asc
+EOF
     fi
     if ! (test -f /etc/apt/preferences.d/99r2u); then
         cat <<EOF | sudo tee -a /etc/apt/preferences.d/99cranapt > /dev/null
@@ -227,8 +254,9 @@ EOF
     # May 2020: we also need devscripts for checkbashism
     # Sep 2020: add bspm and remotes
     if ! (test -f /usr/bin/R); then
-        echo "::group::Adding R"
-        sudo apt install --yes --no-install-recommends r-base-dev r-recommended
+        echo "::group::Adding R qpdf devscript r-cran-remotes"
+        sudo apt update
+        sudo apt install --yes --no-install-recommends r-base-dev r-recommended qpdf devscripts r-cran-remotes
 
         #sudo cp -ax /usr/lib/R/site-library/littler/examples/{build.r,check.r,install*.r,update.r} /usr/local/bin
         ## for now also from littler from GH
@@ -246,11 +274,11 @@ EOF
         echo "::endgroup::"
     fi
 
-    if ! (test -f /usr/bin/qpdf); then
-        echo "::group::Adding qpdf devscripts"
-        sudo apt install --yes --no-install-recommends qpdf devscripts
-        echo "::endgroup::"
-    fi
+    #if ! (test -f /usr/bin/qpdf); then
+    #    echo "::group::Adding qpdf devscripts"
+    #    sudo apt install --yes --no-install-recommends qpdf devscripts
+    #    echo "::endgroup::"
+    #fi
 
     # Process options
     BootstrapLinuxOptions
