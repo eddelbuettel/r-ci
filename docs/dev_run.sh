@@ -94,21 +94,10 @@ Bootstrap() {
         exit 1
     fi
 
-    #if ! (test -e .Rbuildignore && grep -q 'travis-tool' .Rbuildignore); then
-    #    echo '^travis-tool\.sh$' >>.Rbuildignore
-    #fi
     if ! (test -e .Rbuildignore && grep -q 'run.sh' .Rbuildignore); then
         echo '^run\.sh$' >> .Rbuildignore
         echo '^\.devcontainer' >> .Rbuildignore
     fi
-    #if ! (test -e .Rbuildignore && grep -q 'travis_wait' .Rbuildignore); then
-    #    echo '^travis_wait_.*\.log$' >> .Rbuildignore
-    #fi
-
-    # Default packages
-    #echo "::group::Add remotes"
-    #sudo Rscript -e 'if (!requireNamespace("remotes", quietly=TRUE)) install.packages("remotes")' > /dev/null
-    #echo "::endgroup::"
 
     # Make sure unit test package (among testthat, tinytest, RUnit) installed
     EnsureUnittestRunner
@@ -209,26 +198,6 @@ Pin-Priority: 700
 EOF
     fi
 
-    ## Set up our CRAN mirror.
-    # No longer need c2d4u when using r2u
-    ## Get the key if it is missing
-    #if ! test -f /etc/apt/trusted.gpg.d/cran_ubuntu_key.asc; then
-    #   wget -qO- https://cloud.r-project.org/bin/linux/ubuntu/marutter_pubkey.asc | sudo tee -a /etc/apt/trusted.gpg.d/cran_ubuntu_key.asc
-    #fi
-    ## Add the repo
-    ## need pinning to ensure repo sorts higher, note we also pin r2u
-    #echo "Package: *" | sudo tee /etc/apt/preferences.d/c2d4u-pin > /dev/null
-    #echo "Pin: release o=LP-PPA-c2d4u.team-c2d4u4.0+" | sudo tee -a /etc/apt/preferences.d/c2d4u-pin > /dev/null
-    #echo "Pin-Priority: 600" | sudo tee -a /etc/apt/preferences.d/c2d4u-pin > /dev/null
-    ## now add repo (and update index)
-    #sudo add-apt-repository -y "deb ${CRAN}/bin/linux/ubuntu $(lsb_release -cs)-cran40/"
-
-    # Add marutter's c2d4u repository.
-    # R 4.0 (not needed as CRAN current) and c2d4u/4.0 variant as backup
-    #sudo add-apt-repository -y "ppa:marutter/rrutter4.0"
-    # No longer need c2d4u when using r2u
-    #sudo add-apt-repository -y "ppa:c2d4u.team/c2d4u4.0+"
-
     ## Added PPAs, if given
     if [[ "${ADDED_PPAS}" != "" ]]; then
         ## Check for add-apt-repository and install if needed, using a fudge around the (manual) tz config dialog
@@ -248,21 +217,13 @@ EOF
         echo "::endgroup::"
     fi
 
-    # Install an R development environment. qpdf is also needed for
-    # --as-cran checks:
-    #   https://stat.ethz.ch/pipermail/r-help//2012-September/335676.html
+    # Install an R development environment. qpdf is also needed for --as-cran checks.
     # May 2020: we also need devscripts for checkbashism
     # Sep 2020: add bspm and remotes
     if ! (test -f /usr/bin/R); then
         echo "::group::Adding R qpdf devscript r-cran-remotes"
         sudo apt update
         sudo apt install --yes --no-install-recommends r-base-dev r-recommended qpdf devscripts r-cran-remotes
-
-        #sudo cp -ax /usr/lib/R/site-library/littler/examples/{build.r,check.r,install*.r,update.r} /usr/local/bin
-        ## for now also from littler from GH
-        #sudo install.r remotes
-        #sudo installGithub.r eddelbuettel/littler
-        #sudo cp -ax /usr/local/lib/R/site-library/littler/examples/{check.r,install*.r} /usr/local/bin
 
         # Default to no recommends
         echo 'APT::Install-Recommends "false";' | sudo tee /etc/apt/apt.conf.d/90local-no-recommends > /dev/null
@@ -273,12 +234,6 @@ EOF
         sudo chmod 2777 /usr/local/lib/R /usr/local/lib/R/site-library
         echo "::endgroup::"
     fi
-
-    #if ! (test -f /usr/bin/qpdf); then
-    #    echo "::group::Adding qpdf devscripts"
-    #    sudo apt install --yes --no-install-recommends qpdf devscripts
-    #    echo "::endgroup::"
-    #fi
 
     # Process options
     BootstrapLinuxOptions
