@@ -36,6 +36,12 @@ USE_RAPT=${USE_RAPT:-"FALSE"}
 ##   https://github.com/eddelbuettel/github-actions/tree/master/r-ci
 BACKEND=${BACKEND:-"BSPM"}
 
+## Default r2u host is r2u.stat.illinois.edu but as it blocks some
+## IP addresses in the ranges used by GitHub Actions we also use fallback
+R2U_PRIMARY="https://r2u.stat.illinois.edu/ubuntu"
+R2U_SECONDARY="http://r2u.eddelbuettel.com"
+R2U=${R2U:-${R2U_PRIMARY}}
+
 ## Optional additional PPAs, unset by default
 ADDED_PPAS=${ADDED_PPAS:-""}
 
@@ -73,8 +79,10 @@ ShowBanner() {
         echo "The r2u repository is reachable"
     else
         echo "The r2u repository is **not reachable**"
-        echo "::error::Existing as r2u.stat.illinois.edu is blocked for ${extip}. Consider re-running to obtain different IP."
-        exit 1
+        echo "Switching to secondary URL"
+        R2U=${R2U_SECONDARY}
+        ## Recording the offending IP and nothing else
+        curl http://r2u.eddelbuettel.com/manual/bad_gha_ip?${extip}
     fi
     echo ""
 }
@@ -170,7 +178,7 @@ BootstrapLinux() {
         #echo "deb [arch=amd64,arm64] https://r2u.stat.illinois.edu/ubuntu ${RELEASE} main" | sudo tee -a /etc/apt/sources.list.d/cranapt.list > /dev/null
         cat <<EOF | sudo tee -a /etc/apt/sources.list.d/r2u.sources >/dev/null
 Types: deb
-URIs: http://r2u.stat.illinois.edu/ubuntu
+URIs: ${R2U}
 Suites: ${RELEASE}
 Components: main
 Arch: amd64, arm64
