@@ -314,6 +314,9 @@ BootstrapMac() {
     # qpdf
     brew install qpdf
 
+    # remotes
+    sudo Rscript -e 'if (!requireNamespace("remotes", quietly=TRUE)) install.packages("remotes")'
+
     # Process options
     BootstrapMacOptions
 }
