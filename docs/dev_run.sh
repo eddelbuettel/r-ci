@@ -305,14 +305,23 @@ EOF
 }
 
 BootstrapMac() {
+    echo "::group::Adding R binary"
     # Install from latest CRAN binary build for OS X (given ${ARCH} from 'uname -m')
     wget -q ${CRAN}/bin/macosx/sonoma-${ARCH}/base/R-${RVER}-${ARCH}.pkg -O /tmp/R-latest.pkg
     echo "Installing macOS binary package for R on ${ARCH}"
     sudo installer -pkg "/tmp/R-latest.pkg" -target /
     rm "/tmp/R-latest.pkg"
+    echo "::endgroup::"
 
+    echo "::group::Adding qpdf"
     # qpdf
     brew install qpdf
+    echo "::endgroup::"
+
+    echo "::group::Adding remotes"
+    # remotes
+    sudo Rscript -e 'install.packages("remotes")'
+    echo "::endgroup::"
 
     # Process options
     BootstrapMacOptions
@@ -336,6 +345,7 @@ BootstrapMacOptions() {
 
     ## See https://github.com/r-universe-org/actions/blob/v11/macos-prep/action.yml#L85-L91
     if [[ "$BOOTSTRAP_MACOS_FORTRAN" == "TRUE" ]]; then
+        echo "::group::Adding Fortran"
         #wget -q https://mac.r-project.org/tools/gfortran-14.2-universal.pkg -O /tmp/gfortran.pkg
         wget -q https://github.com/R-macos/gcc-14-branch/releases/download/gcc-14.2-darwin-r2.1/gfortran-14.2-universal.pkg -O /tmp/gfortran.pkg
         echo "Installing macOS Fortran binary package for R on ${ARCH}"
@@ -343,9 +353,11 @@ BootstrapMacOptions() {
         rm "/tmp/gfortran.pkg"
         mkdir -p ~/.R
         echo "FLIBS = /opt/gfortran/lib/gcc/aarch64-apple-darwin20.0/14.2.0/libemutls_w.a /opt/gfortran/lib/gcc/aarch64-apple-darwin20.0/14.2.0/libheapt_w.a -L/Library/Frameworks/R.framework/Resources/lib -lgfortran.5 -lquadmath.0" > ~/.R/Makevars
+        echo "::endgroup::"
     fi
 
     if [[ "$BOOTSTRAP_MACOS_OPENMP" == "TRUE" ]] && [[ "$GITHUB_ACTIONS" == "true" ]]; then
+        echo "::group::Adding OpenMP"
         omptgz=openmp-17.0.6-darwin20-Release.tar.gz
         #wget -q https://mac.r-project.org/openmp/$omptgz -O /tmp/$omptgz
         wget -q https://eddelbuettel.github.io/r-ci/macos/$omptgz -O /tmp/$omptgz
@@ -358,6 +370,7 @@ BootstrapMacOptions() {
         echo "MACOSX_DEPLOYMENT_TARGET=11.0" >> $GITHUB_ENV
         echo "  xcode is set: $(xcode-select --print-path)"
         echo "  using SDK: $(xcrun --show-sdk-version)"
+    echo "::endgroup::"
     fi
 
 }
