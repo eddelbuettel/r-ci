@@ -74,7 +74,7 @@ ShowBanner() {
     extip=$(curl -s ipinfo.io/ip)
     echo "Running via external IP address ${extip}"
 
-    webstatus=$(curl -s -o /dev/null -w "%{http_code}" https://r2u.stat.illinois.edu)
+    webstatus=$(curl -s -f -o /dev/null -w "%{http_code}" https://r2u.stat.illinois.edu)
     if [[ "${webstatus}" == "200" ]]; then
         echo "The r2u repository is reachable"
     else
