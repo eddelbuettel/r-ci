@@ -186,7 +186,7 @@ Types: deb
 URIs: ${R2U}
 Suites: ${RELEASE}
 Components: main
-Arch: amd64, arm64
+Architectures: amd64 arm64
 Signed-By: /etc/apt/trusted.gpg.d/eddelbuettel.asc
 EOF
 
@@ -198,7 +198,7 @@ Types: deb
 URIs: https://cloud.r-project.org/bin/linux/ubuntu
 Suites: ${RELEASE}-cran40/
 Components:
-Arch: amd64, arm64
+Architectures: amd64 arm64
 Signed-By: /etc/apt/trusted.gpg.d/rutter.asc
 EOF
     fi
