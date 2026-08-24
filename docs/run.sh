@@ -67,27 +67,32 @@ R_CHECK_INSTALL_ARGS=${R_CHECK_INSTALL_ARGS-"--install-args=--install-tests"}
 _R_CHECK_TESTS_NLINES_=0
 
 ShowBanner() {
-    echo ""
     echo "r-ci: Portable CI for R at Travis, GitHub Actions, Azure, ..."
-    echo ""
+}
+
+ShowUbuntuBanner() {
     echo "Current Ubuntu distribution: '$(lsb_release -ds)' aka '${RELEASE}'"
     extip=$(curl -s ipinfo.io/ip)
     echo "Running via external IP address ${extip}"
-
-    webstatus=$(curl -s -f -o /dev/null -w "%{http_code}" https://r2u.stat.illinois.edu)
-    if [[ "${webstatus}" == "200" ]]; then
+    webstatus=$(curl -I -s -o /dev/null https://r2u.stat.illinois.edu)
+    rc="$?"
+    if [[ "${rc}" == "0" ]]; then
         echo "The r2u repository is reachable"
     else
-        echo "The r2u repository is **not reachable**"
+        echo "The r2u repository is **not reachable**, error ${rc}"
         echo "Switching to secondary URL"
         R2U=${R2U_SECONDARY}
         ## Recording the offending IP and nothing else
         curl http://r2u.eddelbuettel.com/manual/bad_gha_ip?${extip}
     fi
-    echo ""
+}
+
+ShowMacOSBanner() {
+    echo "Current macOS versin: '$(sw_vers -productVersion)'"
 }
 
 Bootstrap() {
+    ShowBanner
     SetRepos
 
     if [[ "Darwin" == "${OS}" ]]; then
@@ -154,7 +159,7 @@ BootstrapLinux() {
         echo "::endgroup::"
     fi
 
-    ShowBanner
+    ShowUbuntuBanner
 
     ## If opted in, trim apt sources
     if [[ "${TRIM_APT_SOURCES}" != "FALSE" ]]; then
@@ -313,6 +318,7 @@ EOF
 }
 
 BootstrapMac() {
+    ShowMacOSBanner
     echo "::group::Adding R binary"
     # Install from latest CRAN binary build for OS X (given ${ARCH} from 'uname -m')
     wget -q ${CRAN}/bin/macosx/sonoma-${ARCH}/base/R-${RVER}-${ARCH}.pkg -O /tmp/R-latest.pkg
