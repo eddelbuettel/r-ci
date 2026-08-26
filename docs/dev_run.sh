@@ -74,16 +74,15 @@ ShowUbuntuBanner() {
     echo "Current Ubuntu distribution: '$(lsb_release -ds)' aka '${RELEASE}'"
     extip=$(curl -s ipinfo.io/ip)
     echo "Running via external IP address ${extip}"
-    webstatus=$(curl -I -s -o /dev/null https://r2u.stat.illinois.edu)
-    rc="$?"
-    if [[ "${rc}" == "0" ]]; then
+    webstatus=$(curl --head --silent --no-fail --output /dev/null --write-out "%{http_code}" https://r2u.stat.illinois.edu || true)
+    if test "${webstatus}" = "200"; then
         echo "The r2u repository is reachable"
     else
-        echo "The r2u repository is **not reachable**, error ${rc}"
+        echo "The r2u repository is **not reachable** from ${extip}"
         echo "Switching to secondary URL"
         R2U=${R2U_SECONDARY}
         ## Recording the offending IP and nothing else
-        curl http://r2u.eddelbuettel.com/manual/bad_gha_ip?${extip}
+        curl -s http://r2u.eddelbuettel.com/manual/bad_gha_ip?${extip}
     fi
 }
 
