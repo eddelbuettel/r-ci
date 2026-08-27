@@ -78,8 +78,7 @@ ShowUbuntuBanner() {
     if test "${webstatus}" = "200"; then
         echo "The r2u repository is reachable"
     else
-        echo "The r2u repository is **not reachable** from ${extip}"
-        echo "Switching to secondary URL"
+        echo "::notice::The r2u repository is **not reachable** from ${extip}. Switching to secondary URL"
         R2U=${R2U_SECONDARY}
         ## Recording the offending IP and nothing else
         curl -s http://r2u.eddelbuettel.com/manual/bad_gha_ip?${extip}
