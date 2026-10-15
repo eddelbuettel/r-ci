@@ -57,13 +57,12 @@
   ending in <code>.yml</code> or <code>.yaml</code> in a directory <code>.github/workflows</code> within your GitHub
   repo---and you are all set. No additional registration is needed.
   <p>
-  Below is an (adapted) example <code>.github/workflows/ci.yaml</code> from the <a href="https://github.com/eddelbuettel/rcppint564">RcppInt64</a> repository running a simple matrix build over Linux and macOS---and over two containers.
-  The containers offer, respectively, use of R-devel and a possibly slightly faster r2u setup (as times for this can vary at GitHub).
-  Note that the matrix build for any one of these can be turned off by placing a simple comment <code>#</code> character in
-  front as can be seen in many example YAML files. Also note that this
-  version now use the <a href="https://github.com/eddelbuettel/github-actions/tree/master/r-ci">GitHub Action for r-ci</a>
-  (instead of the standard <code>curl</code> use shown in the other examples)
-  which also includes the <code>bootstrap</code> step.
+  Below is a (real) example <code>.github/workflows/ci.yaml</code> from the <a href="https://github.com/eddelbuettel/zigg/blob/master/.github/workflows/ci.yaml">zigg</a> 
+  repository running a simple matrix build over Linux and macOS. Another container-based example
+  showing use of r-devel is in the <a href="https://github.com/eddelbuettel/rcppint64/blob/master/.github/workflows/ci.yaml">RcppInt64</a> repo.
+  Note that the matrix build for any one can be turned off by placing a simple comment <code>#</code> character in
+  front as can be seen here (and in many of my repos). Also note that this version use the <a href="https://github.com/eddelbuettel/github-actions/tree/master/r-ci">GitHub Action for r-ci</a>
+  which already includes the <code>bootstrap</code> step.
   Lastly, one can uncomment the dumping of logs in case of failures, and
   enable coverage as some of my repos do. (Note that you need to set a
   repository secret under the name `CODECOV_TOKEN` with the supplied token string.)
@@ -78,39 +77,28 @@ on:
   push:
   pull_request:
 
-env:
-  _R_CHECK_FORCE_SUGGESTS_: "false"
-
 jobs:
   ci:
     strategy:
       matrix:
         include:
-          - { name: container, os: ubuntu-latest, container: rocker/r2u4ci }
-          - { name: r-devel,   os: ubuntu-latest, container: rocker/drd }
-          - { name: macos,     os: macos-latest }
-          - { name: ubuntu,    os: ubuntu-latest }
+          #- {os: macOS-latest}
+          - {os: ubuntu-latest}
 
     runs-on: ${{ matrix.os }}
-    container: ${{ matrix.container }}
 
     steps:
-      - name: Checkout
-        uses: actions/checkout@v6
+      - uses: actions/checkout@v7
 
       - name: Setup
         uses: eddelbuettel/github-actions/r-ci@master
 
       - name: Dependencies
-        run: ./run.sh install_all
+        run: ./run.sh install_deps
 
       - name: Test
         run: ./run.sh run_tests
 
-      #- name: Logs
-      #  run: ./run.sh dump_logs
-      #  if: failure()
-        
       #- name: Coverage
       #  if: ${{ matrix.os == 'ubuntu-latest' }}
       #  run: ./run.sh coverage
